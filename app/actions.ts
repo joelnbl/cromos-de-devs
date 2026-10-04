@@ -60,6 +60,18 @@ export async function createTrade(formData: FormData) {
   redirect(`/t/${data as string}?nuevo=1`);
 }
 
+export async function createGift(formData: FormData) {
+  const { supabase, user } = await getUser();
+  if (!supabase || !user) redirect("/cambios");
+  const offer = Number(formData.get("offer"));
+  if (!offer) redirect("/cambios?error=pickBoth");
+
+  const { data, error } = await supabase.rpc("create_gift", { p_offer: offer });
+  if (error) redirect(`/cambios?error=${codeOf(error)}`);
+  revalidatePath("/cambios");
+  redirect(`/t/${data as string}?nuevo=1`);
+}
+
 export async function acceptTrade(formData: FormData) {
   const code = String(formData.get("code") ?? "");
   const { supabase, user } = await getUser();

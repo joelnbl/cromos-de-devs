@@ -5,17 +5,18 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { acceptTrade, cancelTrade, createTrade } from "@/app/actions";
+import { acceptTrade, cancelTrade, createGift, createTrade } from "@/app/actions";
 import { Cromo } from "./Cromo";
 import { cardNumber, RARITIES, type Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
 import { useT } from "@/lib/i18n/client";
 
 export type Who = { login: string; avatar: string | null };
-export type TradeView = { code: string; from: Who | null; offer: Card; want: Card; ago: string };
+/** want nulo = regalo: se lo queda quien no lo tenga. */
+export type TradeView = { code: string; from: Who | null; offer: Card; want: Card | null; ago: string };
 type Match = TradeView & { myQty: number };
 type BoardItem = Match & { kind: "can" | "want" | "other" };
-type HistoryItem = { code: string; partner: Who | null; gave: Card; got: Card; at: string; ago: string; iCreated: boolean };
+type HistoryItem = { code: string; partner: Who | null; gave: Card | null; got: Card | null; at: string; ago: string; iCreated: boolean };
 
 const SEEN_KEY = "cromos.trades.seen";
 const label = (c: Card) => `#${cardNumber(c.id)} ${c.name ?? c.login}`;
@@ -30,7 +31,7 @@ export function TradesWorkspace(props: {
   myOpen: TradeView[];
   history: HistoryItem[];
   notices: HistoryItem[];
-  celebrate: { card: Card; partner: Who | null; left: number } | null;
+  celebrate: { card: Card; gift: boolean; partner: Who | null; left: number } | null;
   preset: { give: number | null; want: number | null };
   site: string;
   total: number;
@@ -145,7 +146,9 @@ function AcceptedNotice({ notices }: { notices: HistoryItem[] }) {
     <div role="status" className="flex flex-wrap items-center gap-4 rounded-2xl border-2 border-ink bg-white p-3.5 shadow-[4px_4px_0_#111]">
       <Avatar src={item.partner?.avatar} size={52} />
       <p className="min-w-60 flex-1 text-[17px] font-bold leading-snug">
-        {t.trades.noticeAccepted(item.partner?.login ?? t.trades.someone, label(item.got))}
+        {item.got
+          ? t.trades.noticeAccepted(item.partner?.login ?? t.trades.someone, label(item.got))
+          : item.gave && t.trades.noticeGift(item.partner?.login ?? t.trades.someone, label(item.gave))}
       </p>
       <Link href="/album" onClick={dismiss} className="btn btn-sun">
         {t.trades.seeInAlbum}
@@ -185,9 +188,11 @@ function ForYou({ matches }: { matches: Match[] }) {
             </div>
             <div className="flex items-end justify-center gap-3">
               <div className="flex flex-col items-center gap-1.5">
-                <span className="text-xs font-extrabold uppercase text-sun">{t.trades.givesYou}</span>
-                <Cromo card={m.offer} width={112} interactive={false} />
+                <span className="text-xs font-extrabold uppercase text-sun">{m.want ? t.trades.givesYou : t.trades.giftLabel}</span>
+                <Cromo card={m.offer} width={m.want ? 112 : 150} interactive={false} />
               </div>
+              {m.want && (
+              <>
               <svg className="mb-16 shrink-0" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffc72c" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M7 7h11l-3-3" />
                 <path d="M17 17H6l3 3" />
@@ -197,11 +202,13 @@ function ForYou({ matches }: { matches: Match[] }) {
                 <Cromo card={m.want} width={112} interactive={false} />
                 <span className="absolute -right-2 top-4 rounded-full border-2 border-ink bg-sun px-2 font-mono text-xs font-extrabold text-ink">×{m.myQty}</span>
               </div>
+              </>
+              )}
             </div>
             <form action={acceptTrade}>
               <input type="hidden" name="code" value={m.code} />
               <input type="hidden" name="from" value="cambios" />
-              <Submit className="min-h-13 w-full rounded-full bg-sun text-base font-black text-ink disabled:opacity-60">{t.trades.tradeNow}</Submit>
+              <Submit className="min-h-13 w-full rounded-full bg-sun text-base font-black text-ink disabled:opacity-60">{m.want ? t.trades.tradeNow : t.trades.giftTake}</Submit>
             </form>
           </li>
         ))}
@@ -368,6 +375,14 @@ function NewTrade({
               </button>
             )}
           </form>
+
+          {giveCard && (
+            <form action={createGift} className="flex flex-wrap items-center gap-3 rounded-2xl border-2 border-dashed border-ink/40 p-4">
+              <input type="hidden" name="offer" value={giveCard.id} />
+              <p className="min-w-60 flex-1 text-[15px] font-semibold leading-snug">{t.trades.giftHint}</p>
+              <Submit className="btn btn-ghost border-2 border-ink disabled:opacity-60">{t.trades.giftButton}</Submit>
+            </form>
+          )}
         </>
       )}
     </section>
@@ -384,11 +399,16 @@ function AllCards({ dupes, total, site }: { dupes: { card: Card; qty: number }[]
     <div role="status" className="flex flex-col gap-4 rounded-2xl border-2 border-ink bg-[#fff4cf] p-4">
       <p className="text-xl font-black leading-tight">{t.trades.allCardsTitle}</p>
       <p className="font-semibold leading-snug">{t.trades.allCardsBody(total)}</p>
+      <p className="font-semibold leading-snug">{t.trades.giftHint}</p>
       <ul className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 pt-2" aria-label={t.trades.statDupes}>
         {dupes.map(({ card, qty }) => (
-          <li key={card.id} className="relative shrink-0">
+          <li key={card.id} className="relative flex shrink-0 flex-col items-center gap-2">
             <Cromo card={card} width={92} interactive={false} />
             <span className="absolute -right-1 -top-1 rounded-full border-2 border-ink bg-sun px-2 font-mono text-xs font-extrabold">×{qty}</span>
+            <form action={createGift}>
+              <input type="hidden" name="offer" value={card.id} />
+              <Submit className="min-h-11 rounded-full bg-ink px-4 text-sm font-black text-sun disabled:opacity-60">{t.trades.giftOne}</Submit>
+            </form>
           </li>
         ))}
       </ul>
@@ -481,7 +501,9 @@ function MyTrades({ open, history, site }: { open: TradeView[]; history: History
           <ul role="tabpanel" className="flex flex-col gap-3">
             {open.map((tr) => {
               const url = `${site}/t/${tr.code}`;
-              const text = t.trade.shareText(tr.offer.name ?? tr.offer.login, tr.want.name ?? tr.want.login);
+              const text = tr.want
+                ? t.trade.shareText(tr.offer.name ?? tr.offer.login, tr.want.name ?? tr.want.login)
+                : t.trade.giftShareText(tr.offer.name ?? tr.offer.login);
               return (
                 <li key={tr.code} className="flex flex-col gap-3 rounded-2xl border-2 border-ink p-3.5">
                   <Link href={`/t/${tr.code}`} className="flex items-center gap-2.5 font-extrabold no-underline">
@@ -491,8 +513,14 @@ function MyTrades({ open, history, site }: { open: TradeView[]; history: History
                       <path d="M7 7h11l-3-3" />
                       <path d="M17 17H6l3 3" />
                     </svg>
-                    <Avatar src={tr.want.avatar_url} dashed />
-                    <span>#{cardNumber(tr.want.id)}</span>
+                    {tr.want ? (
+                      <>
+                        <Avatar src={tr.want.avatar_url} dashed />
+                        <span>#{cardNumber(tr.want.id)}</span>
+                      </>
+                    ) : (
+                      <span className="rounded-full bg-sun px-2.5 py-0.5 text-sm">{t.trades.giftMine}</span>
+                    )}
                     <span className="grow" />
                     <span className="font-mono text-xs font-bold text-ink-soft">{tr.ago}</span>
                   </Link>
@@ -538,7 +566,11 @@ function MyTrades({ open, history, site }: { open: TradeView[]; history: History
             <li key={h.code} className="flex items-center gap-3 rounded-2xl border-2 border-ink/15 p-3">
               <Avatar src={h.partner?.avatar} />
               <p className="flex-1 text-[15px] font-bold leading-snug">
-                {t.trades.history(h.partner?.login ?? t.trades.someone, label(h.gave), label(h.got))}
+                {h.gave && h.got
+                  ? t.trades.history(h.partner?.login ?? t.trades.someone, label(h.gave), label(h.got))
+                  : h.gave
+                    ? t.trades.historyGiftGave(h.partner?.login ?? t.trades.someone, label(h.gave))
+                    : h.got && t.trades.historyGiftGot(h.partner?.login ?? t.trades.someone, label(h.got))}
               </p>
               <span className="font-mono text-xs font-bold text-ink-soft">{h.ago}</span>
             </li>
@@ -613,7 +645,7 @@ function Board({ items }: { items: BoardItem[] }) {
                 </svg>
                 <div>
                   <span className="block text-[11px] font-extrabold uppercase text-ink-soft">{t.trades.asks}</span>
-                  {label(b.want)}
+                  {b.want ? label(b.want) : <span className="rounded-full bg-sun px-2 py-0.5">{t.trades.giftTag}</span>}
                 </div>
               </div>
               <div className="mt-auto">
@@ -642,13 +674,13 @@ function Board({ items }: { items: BoardItem[] }) {
 function AcceptFromBoard({ item }: { item: BoardItem }) {
   const t = useT();
   const [confirming, setConfirming] = useState(false);
-  const last = item.myQty < 2;
+  const last = item.want !== null && item.myQty < 2;
 
   return (
     <form action={acceptTrade} className="flex flex-col gap-2">
       <input type="hidden" name="code" value={item.code} />
       <input type="hidden" name="from" value="cambios" />
-      {last && confirming && <p className="text-[13px] font-extrabold text-[#b3261e]">{t.trades.confirmLast(label(item.want))}</p>}
+      {last && confirming && <p className="text-[13px] font-extrabold text-[#b3261e]">{item.want && t.trades.confirmLast(label(item.want))}</p>}
       {last && !confirming ? (
         <button
           type="button"
@@ -659,7 +691,7 @@ function AcceptFromBoard({ item }: { item: BoardItem }) {
         </button>
       ) : (
         <Submit className="min-h-11 rounded-full bg-ink px-4 text-sm font-black text-sun disabled:opacity-60">
-          {last ? t.trades.confirmYes : `${t.trades.youHaveIt} · ${t.trades.accept}`}
+          {last ? t.trades.confirmYes : item.want ? `${t.trades.youHaveIt} · ${t.trades.accept}` : t.trades.giftTake}
         </Submit>
       )}
     </form>
@@ -668,7 +700,7 @@ function AcceptFromBoard({ item }: { item: BoardItem }) {
 
 /* ---------- ¡Cambio hecho! ---------- */
 
-function Celebration({ card, partner, left }: { card: Card; partner: Who | null; left: number }) {
+function Celebration({ card, gift, partner, left }: { card: Card; gift: boolean; partner: Who | null; left: number }) {
   const t = useT();
   const router = useRouter();
   const reduce = useReducedMotion();
@@ -692,9 +724,9 @@ function Celebration({ card, partner, left }: { card: Card; partner: Who | null;
       aria-modal="true"
       aria-labelledby="hecho-titulo"
     >
-      <p className="font-mono text-sm font-extrabold uppercase tracking-wider text-sun">{t.trades.tradeWith(partner?.login ?? t.trades.someone)}</p>
+      <p className="font-mono text-sm font-extrabold uppercase tracking-wider text-sun">{gift ? t.trades.giftedYou(partner?.login ?? t.trades.someone) : t.trades.tradeWith(partner?.login ?? t.trades.someone)}</p>
       <h2 id="hecho-titulo" className="display text-center text-6xl text-sun">
-        {t.trade.done}
+        {gift ? t.trade.giftDone : t.trade.done}
       </h2>
       <motion.div
         className="relative"

@@ -18,7 +18,7 @@ type TradeRow = {
   from_user: string;
   accepted_by: string | null;
   offer_card_id: number;
-  want_card_id: number;
+  want_card_id: number | null;
   status: string;
   created_at: string;
   closed_at: string | null;
@@ -77,8 +77,9 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
   };
   const view = (r: TradeRow): TradeView | null => {
     const offer = byId.get(r.offer_card_id);
-    const want = byId.get(r.want_card_id);
-    if (!offer || !want) return null;
+    // Sin cromo pedido = regalo
+    const want = r.want_card_id === null ? null : (byId.get(r.want_card_id) ?? undefined);
+    if (!offer || want === undefined) return null;
     return { code: r.code, from: who(r.from_user), offer, want, ago: ago(r.created_at) };
   };
 
@@ -86,20 +87,23 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
   const others = open.filter(({ r }) => r.from_user !== user.id);
   const myOpen = open.filter(({ r }) => r.from_user === user.id).map(({ v }) => v);
 
-  // Para ti: me dan uno que me falta y piden uno que tengo repetido. Uno por cromo ofrecido.
+  // Para ti: me dan uno que me falta y piden uno que tengo repetido (o me lo regalan).
+  // Uno por cromo ofrecido.
   const seenOffer = new Set<number>();
   const matches = others
-    .filter(({ v }) => !qty.has(v.offer.id) && (qty.get(v.want.id) ?? 0) >= 2)
+    .filter(({ v }) => !qty.has(v.offer.id) && (v.want === null || (qty.get(v.want.id) ?? 0) >= 2))
+    .sort((a, b) => Number(b.v.want === null) - Number(a.v.want === null))
     .filter(({ v }) => !seenOffer.has(v.offer.id) && Boolean(seenOffer.add(v.offer.id)))
     .slice(0, 6)
-    .map(({ v }) => ({ ...v, myQty: qty.get(v.want.id) ?? 0 }));
+    .map(({ v }) => ({ ...v, myQty: v.want ? (qty.get(v.want.id) ?? 0) : 0 }));
   const matchCodes = new Set(matches.map((m) => m.code));
 
   const board = others
     .filter(({ v }) => !matchCodes.has(v.code))
     .map(({ v }) => {
-      const have = qty.get(v.want.id) ?? 0;
-      const kind: "can" | "want" | "other" = have > 0 ? "can" : !qty.has(v.offer.id) ? "want" : "other";
+      const have = v.want ? (qty.get(v.want.id) ?? 0) : 0;
+      const lacksOffer = !qty.has(v.offer.id);
+      const kind: "can" | "want" | "other" = v.want === null ? (lacksOffer ? "can" : "other") : have > 0 ? "can" : lacksOffer ? "want" : "other";
       return { ...v, myQty: have, kind };
     })
     .slice(0, 60);
@@ -118,8 +122,8 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
   const history = done
     .map((r) => {
       const offer = byId.get(r.offer_card_id);
-      const want = byId.get(r.want_card_id);
-      if (!offer || !want) return null;
+      const want = r.want_card_id === null ? null : (byId.get(r.want_card_id) ?? undefined);
+      if (!offer || want === undefined) return null;
       const iCreated = r.from_user === user.id;
       return {
         code: r.code,
@@ -135,8 +139,8 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
 
   // Celebración tras aceptar desde aquí
   const justDone = hecho ? history.find((h) => h.code === hecho && !h.iCreated) : undefined;
-  const celebrate = justDone
-    ? { card: justDone.got, partner: justDone.partner, left: cards.filter((c) => !qty.has(c.id)).length }
+  const celebrate = justDone?.got
+    ? { card: justDone.got, gift: justDone.gave === null, partner: justDone.partner, left: cards.filter((c) => !qty.has(c.id)).length }
     : null;
 
   const dupeCount = [...qty.values()].reduce((n, q) => n + Math.max(0, q - 1), 0);

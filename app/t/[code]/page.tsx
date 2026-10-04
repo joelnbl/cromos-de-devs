@@ -38,19 +38,26 @@ export default async function TradePage({
     .maybeSingle();
   if (!trade) notFound();
 
-  const [offer, want] = await Promise.all([cardById(trade.offer_card_id), cardById(trade.want_card_id)]);
-  if (!offer || !want) notFound();
+  // Sin cromo pedido es un regalo
+  const gift = trade.want_card_id === null;
+  const [offer, want] = await Promise.all([
+    cardById(trade.offer_card_id),
+    gift ? Promise.resolve(null) : cardById(trade.want_card_id),
+  ]);
+  if (!offer || (!gift && !want)) notFound();
 
   const mine = user?.id === trade.from_user;
   let hasWanted = false;
+  let hasOffer = false;
   if (user && !mine) {
     const { data } = await supabase
       .from("collection")
-      .select("quantity")
+      .select("card_id")
       .eq("user_id", user.id)
-      .eq("card_id", want.id)
-      .maybeSingle();
-    hasWanted = Boolean(data);
+      .in("card_id", gift ? [offer.id] : [offer.id, want!.id]);
+    const ids = new Set((data ?? []).map((d) => d.card_id as number));
+    hasWanted = Boolean(want && ids.has(want.id));
+    hasOffer = ids.has(offer.id);
   }
 
   return (
@@ -58,7 +65,7 @@ export default async function TradePage({
       <div className="mx-auto max-w-5xl px-4 py-12 text-center">
         <p className="font-mono text-sm font-bold uppercase text-sun">{t.trade.title}</p>
         <h1 className="display mt-2 text-5xl md:text-6xl">
-          {hecho ? t.trade.done : trade.status === "abierto" ? t.trade.ask : t.trade.closed}
+          {hecho ? (gift ? t.trade.giftDone : t.trade.done) : trade.status !== "abierto" ? t.trade.closed : gift ? t.trade.giftTitle : t.trade.ask}
         </h1>
         {message && (
           <p role="alert" className="mx-auto mt-4 max-w-md rounded-xl bg-white px-4 py-3 font-bold text-ink">
@@ -68,14 +75,20 @@ export default async function TradePage({
 
         <div className="mt-10 flex flex-col items-center justify-center gap-6 md:flex-row md:gap-10">
           <div className="flex flex-col items-center gap-3">
-            <span className="font-bold">{mine ? t.trade.youGive : t.trade.youGet}</span>
+            <span className="font-bold">{mine ? (gift ? t.trade.giftYouGive : t.trade.youGive) : t.trade.youGet}</span>
             <Cromo card={offer} className="[--w:200px] md:[--w:240px]" />
           </div>
-          <span className="display text-6xl text-sun" aria-hidden="true">⇄</span>
-          <div className="flex flex-col items-center gap-3">
-            <span className="font-bold">{mine ? t.trade.youAsk : t.trade.youHandOver}</span>
-            <Cromo card={want} className="[--w:200px] md:[--w:240px]" />
-          </div>
+          {want ? (
+            <>
+              <span className="display text-6xl text-sun" aria-hidden="true">⇄</span>
+              <div className="flex flex-col items-center gap-3">
+                <span className="font-bold">{mine ? t.trade.youAsk : t.trade.youHandOver}</span>
+                <Cromo card={want} className="[--w:200px] md:[--w:240px]" />
+              </div>
+            </>
+          ) : (
+            trade.status === "abierto" && <p className="max-w-xs text-lg font-semibold text-white/85">{t.trade.giftBody}</p>
+          )}
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-4">
@@ -88,13 +101,28 @@ export default async function TradePage({
               {nuevo && <p className="text-lg font-bold">{t.trade.shareHint}</p>}
               <ShareButtons
                 url={`${siteUrl()}/t/${code}`}
-                text={t.trade.shareText(offer.name ?? offer.login, want.name ?? want.login)}
+                text={
+                  want
+                    ? t.trade.shareText(offer.name ?? offer.login, want.name ?? want.login)
+                    : t.trade.giftShareText(offer.name ?? offer.login)
+                }
               />
             </>
           ) : !user ? (
             <SignInLink next={`/t/${code}`} className="btn btn-sun">
               {t.trade.signToAccept}
             </SignInLink>
+          ) : gift ? (
+            hasOffer ? (
+              <p className="max-w-md text-lg">{t.trade.giftHave}</p>
+            ) : (
+              <form action={acceptTrade}>
+                <input type="hidden" name="code" value={code} />
+                <button type="submit" className="btn btn-sun">
+                  {t.trade.giftTake}
+                </button>
+              </form>
+            )
           ) : hasWanted ? (
             <form action={acceptTrade}>
               <input type="hidden" name="code" value={code} />
@@ -103,9 +131,7 @@ export default async function TradePage({
               </button>
             </form>
           ) : (
-            <p className="max-w-md text-lg">
-              {t.trade.missingWanted(want.name ?? want.login)}
-            </p>
+            <p className="max-w-md text-lg">{t.trade.missingWanted(want!.name ?? want!.login)}</p>
           )}
         </div>
       </div>
