@@ -1,38 +1,12 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { CARD_COLUMNS, COUNTRIES, type Card } from "@/lib/cards";
-import { safeNext } from "@/lib/site";
-
-async function origin() {
-  const h = await headers();
-  const fromHeader = h.get("origin");
-  if (fromHeader) return fromHeader;
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
 
 function messageOf(error: { message?: string } | null | undefined) {
   return error?.message ?? "Algo salió mal. Inténtalo de nuevo.";
-}
-
-export async function signInWithGithub(formData?: FormData) {
-  const supabase = await createClient();
-  if (!supabase) redirect("/sobre");
-  const next = safeNext(formData?.get("next")?.toString());
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "github",
-    options: {
-      redirectTo: `${await origin()}/auth/callback?next=${encodeURIComponent(next)}`,
-      scopes: "read:user",
-    },
-  });
-  if (error || !data.url) redirect(`/?error=${encodeURIComponent(messageOf(error))}`);
-  redirect(data.url);
 }
 
 export async function signOut() {

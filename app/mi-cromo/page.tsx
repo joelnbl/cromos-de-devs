@@ -1,8 +1,9 @@
+import { SignInLink } from "@/components/SignInLink";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Cromo } from "@/components/Cromo";
 import { ShareButtons } from "@/components/ShareButtons";
-import { setCountry, signInWithGithub } from "@/app/actions";
+import { setCountry } from "@/app/actions";
 import { CARD_COLUMNS, COUNTRIES, RARITIES, type Card } from "@/lib/cards";
 import { DEMO_CARDS } from "@/lib/demo";
 import { getUser } from "@/lib/supabase/server";
@@ -28,10 +29,9 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
       <main className="mx-auto max-w-xl px-4 py-20 text-center">
         <h1 className="display text-5xl">Aún no tienes cromo</h1>
         <p className="mt-4 text-lg">Vuelve a entrar con GitHub para crearlo.</p>
-        <form action={signInWithGithub} className="mt-8">
-          <input type="hidden" name="next" value="/mi-cromo" />
-          <button className="btn btn-dark">Crear mi cromo</button>
-        </form>
+        <div className="mt-8">
+          <SignInLink next="/mi-cromo">Crear mi cromo</SignInLink>
+        </div>
       </main>
     );
   }
@@ -97,12 +97,11 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
           </form>
 
           {supabase && (
-            <form action={signInWithGithub} className="mt-4">
-              <input type="hidden" name="next" value="/mi-cromo" />
-              <button type="submit" className="font-bold underline underline-offset-4">
+            <div className="mt-4">
+              <SignInLink next="/mi-cromo" className="inline-flex items-center gap-2 font-bold underline underline-offset-4">
                 Actualizar mis datos de GitHub
-              </button>
-            </form>
+              </SignInLink>
+            </div>
           )}
         </div>
       </div>

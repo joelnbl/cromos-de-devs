@@ -1,8 +1,7 @@
+import { SignInLink } from "@/components/SignInLink";
 import Link from "next/link";
 import { Cromo } from "@/components/Cromo";
 import { HeroFan } from "@/components/HeroFan";
-import { GithubIcon } from "@/components/icons";
-import { signInWithGithub } from "@/app/actions";
 import { featuredCards } from "@/lib/data";
 import { DEMO_CARDS } from "@/lib/demo";
 import { RARITIES, RARITY_ORDER } from "@/lib/cards";
@@ -24,12 +23,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
       Abrir el sobre de hoy
     </Link>
   ) : (
-    <form action={signInWithGithub}>
-      <button type="submit" className="btn btn-dark min-h-14 px-7 text-lg">
-        <GithubIcon />
-        Consigue tu cromo
-      </button>
-    </form>
+    <SignInLink className="btn btn-dark min-h-14 px-7 text-lg">Consigue tu cromo</SignInLink>
   );
 
   return (

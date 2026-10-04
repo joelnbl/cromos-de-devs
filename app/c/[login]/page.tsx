@@ -1,9 +1,8 @@
+import { SignInLink } from "@/components/SignInLink";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cromo } from "@/components/Cromo";
-import { GithubIcon } from "@/components/icons";
-import { signInWithGithub } from "@/app/actions";
 import { cardByLogin } from "@/lib/data";
 import { RARITIES } from "@/lib/cards";
 import { getUser } from "@/lib/supabase/server";
@@ -53,12 +52,7 @@ export default async function CardPage({ params }: { params: Promise<Params> }) 
                 Abrir mi sobre de hoy
               </Link>
             ) : (
-              <form action={signInWithGithub}>
-                <button type="submit" className="btn btn-sun">
-                  <GithubIcon />
-                  Consigue tu cromo
-                </button>
-              </form>
+              <SignInLink className="btn btn-sun">Consigue tu cromo</SignInLink>
             )}
             <a
               href={`https://github.com/${card.login}`}

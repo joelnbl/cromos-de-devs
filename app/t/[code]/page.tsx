@@ -1,9 +1,10 @@
+import { SignInLink } from "@/components/SignInLink";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cromo } from "@/components/Cromo";
 import { ShareButtons } from "@/components/ShareButtons";
-import { acceptTrade, signInWithGithub } from "@/app/actions";
+import { acceptTrade } from "@/app/actions";
 import { cardById } from "@/lib/data";
 import { getUser } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/site";
@@ -85,12 +86,9 @@ export default async function TradePage({
               />
             </>
           ) : !user ? (
-            <form action={signInWithGithub}>
-              <input type="hidden" name="next" value={`/t/${code}`} />
-              <button type="submit" className="btn btn-sun">
-                Entra con GitHub para aceptar
-              </button>
-            </form>
+            <SignInLink next={`/t/${code}`} className="btn btn-sun">
+              Entra con GitHub para aceptar
+            </SignInLink>
           ) : hasWanted ? (
             <form action={acceptTrade}>
               <input type="hidden" name="code" value={code} />

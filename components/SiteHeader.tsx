@@ -1,9 +1,9 @@
+import { SignInLink } from "@/components/SignInLink";
 import Link from "next/link";
 import { getUser } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { signInWithGithub, signOut } from "@/app/actions";
+import { signOut } from "@/app/actions";
 import { NavLinks } from "./NavLinks";
-import { GithubIcon } from "./icons";
 
 export async function SiteHeader() {
   const { user } = await getUser();
@@ -36,13 +36,10 @@ export async function SiteHeader() {
               )}
             </div>
           ) : (
-            <form action={signInWithGithub}>
-              <button type="submit" className="btn btn-dark min-h-11 px-4 text-base">
-                <GithubIcon />
-                <span className="hidden sm:inline">Entrar con GitHub</span>
-                <span className="sm:hidden">Entrar</span>
-              </button>
-            </form>
+            <SignInLink className="btn btn-dark min-h-11 px-4 text-base">
+              <span className="hidden sm:inline">Entrar con GitHub</span>
+              <span className="sm:hidden">Entrar</span>
+            </SignInLink>
           )}
         </div>
       </header>
