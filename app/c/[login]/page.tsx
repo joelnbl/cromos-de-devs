@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cromo } from "@/components/Cromo";
+import { TiltButton } from "@/components/TiltButton";
 import { DevWorldButton } from "@/components/DevWorldButton";
 import { cardByLogin } from "@/lib/data";
 import { cardName, RARITIES } from "@/lib/cards";
@@ -53,6 +54,7 @@ export default async function CardPage({ params }: { params: Promise<Params> }) 
         <div className="flex justify-center">
           <div className="flex flex-col items-center gap-5">
             <Cromo card={card} className="[--w:min(82vw,330px)]" />
+            <TiltButton tone="dark" />
             <div className="w-full max-w-[330px]">
               <DevWorldButton card={card} />
             </div>

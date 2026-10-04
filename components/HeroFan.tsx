@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { motion, useAnimate, useReducedMotion } from "motion/react";
 import { Cromo } from "./Cromo";
 import { SoundToggle } from "./SoundToggle";
+import { TiltButton } from "./TiltButton";
 import type { Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
 import { useT } from "@/lib/i18n/client";
@@ -92,6 +93,7 @@ export function HeroFan({ cards }: { cards: Card[] }) {
           </motion.div>
         ))}
       </button>
+      <TiltButton className="mt-2" />
       {examples && (
         <figcaption className="font-mono text-xs font-bold text-ink/70">{t.home.examplesCaption}</figcaption>
       )}

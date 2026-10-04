@@ -3,6 +3,7 @@
 import { useCallback, useRef, type CSSProperties, type PointerEvent } from "react";
 import { RARITIES, cardNumber, formatCount, isCreator, langStyle, yearsOnGithub, type Card } from "@/lib/cards";
 import { useT } from "@/lib/i18n/client";
+import { useTilt } from "@/lib/useTilt";
 
 type Props = {
   card: Card;
@@ -43,6 +44,8 @@ function initialsOf(name: string) {
 export function Cromo({ card, width, interactive = true, faceDown = false, eager = false, className, style }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const frame = useRef<number | null>(null);
+
+  useTilt(ref, interactive && !faceDown);
 
   const t = useT();
   const lang = langStyle(card.top_language);

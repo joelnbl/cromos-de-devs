@@ -56,3 +56,5 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 - **T-26** Cromo premium: holo y brillo que siguen al dedo, canto grueso, grano de impresión, relieve y destello al tocar (Sonnet; ajuste del dorado de la legendaria por el coordinador). ✔
 - **T-27** Calidad de código: iconos, cuenta atrás y helpers centralizados, código y textos muertos borrados; capturas idénticas antes/después (Sonnet). ✔
 - **T-28** Su mundo 2.0: tocar torre → ficha del repo y «Ver en GitHub», holograma con música de su rareza, ambiente sonoro, halos y brillo de commits (Sonnet). ✔
+- **T-29** Revelado épico: partículas por rareza, rayos de luz, destello y temblor en legendaria/icono, giro extra y anillo arcoíris en icono (Sonnet). ✔
+- **T-30** Inclinar el móvil mueve el cromo y su brillo (giroscopio, un solo listener compartido, permiso en iOS) (Sonnet). ✔

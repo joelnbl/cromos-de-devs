@@ -81,6 +81,7 @@ const es = {
     aria: (rarity: string, name: string, login: string, lang: string) =>
       `Cromo ${rarity.toLowerCase()} de ${name} (@${login}), ${lang}`,
   },
+  tilt: { button: "Mover con el móvil" },
   packEvent: {
     boost: "Hoy: ¡el triple de épicas, legendarias e iconos!",
     country: (c: string) => `Hoy salen más cromos de ${c}`,
@@ -541,6 +542,7 @@ const en: Dict = {
     polyglot: "Polyglot",
     aria: (rarity: string, name: string, login: string, lang: string) => `${rarity} card of ${name} (@${login}), ${lang}`,
   },
+  tilt: { button: "Tilt with your phone" },
   packEvent: {
     boost: "Today: triple the epics, legendaries and icons!",
     country: (c: string) => `Today you get more cards from ${c}`,

@@ -6,6 +6,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { isTopRarity, type Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
 import { useT } from "@/lib/i18n/client";
+import { createRevealFx } from "@/lib/three/revealFx";
 import { CARD_H, CARD_W, LOOK, createAmbience, createFoilCard, drawCardBack, drawCardFace, type FoilCard } from "@/lib/three/foilCard";
 
 type Pull = { card: Card; isNew: boolean };
@@ -70,6 +71,9 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
       el.appendChild(renderer.domElement);
       const canvas = renderer.domElement;
       canvas.style.display = "block";
+      // El lienzo se sale del recuadro para que chispas y rayos no se corten; los toques los recibe `el`.
+      canvas.style.position = "absolute";
+      canvas.style.pointerEvents = "none";
 
       const scene = new THREE.Scene();
       const pmrem = new THREE.PMREMGenerator(renderer);
@@ -86,6 +90,8 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
       ambience.setRarity("comun");
       scene.add(ambience.group);
 
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const fx = createRevealFx(scene, reduce);
       const back = drawCardBack();
       const n = pulls.length;
       const mid = (n - 1) / 2;
@@ -98,7 +104,6 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
         return { foil, pos, rot, tPos: pos.clone(), tRot: rot.clone(), visible: true };
       });
 
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const s = {
         t: 0,
         phase: "intro" as "intro" | "stack" | "suspense" | "front" | "shown",
@@ -134,8 +139,9 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
       const flipFront = (k: number) => {
         const sl = slots[k];
         sl.tPos.set(0, 0.05, 1.6);
-        sl.tRot.set(0, 0, 0);
         const r = pulls[k].card.rarity;
+        // Icono: un giro completo extra antes de quedarse de frente
+        sl.tRot.set(0, r === "icono" && !reduce ? -Math.PI * 2 : 0, 0);
         ambience.setRarity(r);
         rim.color.setHex(LOOK[r].rim);
         rim.intensity = LOOK[r].rimIntensity;
@@ -144,6 +150,7 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
         setTimeout(() => {
           if (disposed) return;
           sfx.reveal(r);
+          fx.reveal(r, new THREE.Vector3(0, 0.05, 1.7));
           if (pulls[k].isNew) setTimeout(() => !disposed && sfx.pop(), 300);
           cb.current.onRevealed(k);
         }, reduce ? 0 : 380);
@@ -151,28 +158,37 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
 
       // Entrada
       const onMove = (e: PointerEvent) => {
-        const r = canvas.getBoundingClientRect();
+        const r = el.getBoundingClientRect();
         s.tiltTarget.set((e.clientX - r.left) / r.width - 0.5, (e.clientY - r.top) / r.height - 0.5);
       };
       const onLeave = () => s.tiltTarget.set(0, 0);
       const onClick = () => {
         if (s.phase === "shown") cb.current.onTap();
       };
-      canvas.addEventListener("pointermove", onMove);
-      canvas.addEventListener("pointerleave", onLeave);
-      canvas.addEventListener("click", onClick);
+      el.addEventListener("pointermove", onMove);
+      el.addEventListener("pointerleave", onLeave);
+      el.addEventListener("click", onClick);
 
       const resize = () => {
         const w = el.clientWidth;
         const h = el.clientHeight;
-        renderer.setSize(w, h, false);
-        canvas.style.width = `${w}px`;
-        canvas.style.height = `${h}px`;
-        camera.aspect = w / h;
+        const box = el.getBoundingClientRect();
+        const px = Math.max(0, Math.floor(Math.min(box.left, window.innerWidth - box.right)));
+        const py = Math.round(h * 0.25);
+        const W = w + px * 2;
+        const H = h + py * 2;
+        renderer.setSize(W, H, false);
+        canvas.style.width = `${W}px`;
+        canvas.style.height = `${H}px`;
+        canvas.style.left = `${-px}px`;
+        canvas.style.top = `${-py}px`;
+        // Misma escala de la carta, pero con más campo de visión alrededor
+        camera.fov = 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(15)) * (H / h)));
+        camera.aspect = W / H;
         const tan = 2 * Math.tan(THREE.MathUtils.degToRad(15));
         camera.position.z = (CARD_H * 0.82 + 0.5) / tan + 1.6;
         camera.updateProjectionMatrix();
-        const visibleW = tan * (camera.position.z - 0.3) * camera.aspect;
+        const visibleW = tan * (camera.position.z - 0.3) * (w / h);
         spacing = Math.min(0.95, Math.max(0.25, (visibleW - CARD_W * 0.82) / Math.max(1, n - 1)));
       };
       let spacing = 0.95;
@@ -231,6 +247,7 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
           goStack();
           prev.tPos.set(-7, 1.2, 0.6);
           prev.tRot.set(0, -0.4, 0.6);
+          fx.calm();
           sfx.whoosh();
         }
 
@@ -257,6 +274,9 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
         ambience.update(dt, reduce);
         ambience.boost(s.boost * 0.6);
         key.position.set(3 + s.tilt.x * 4, 4 - s.tilt.y * 4, 5);
+        fx.update(dt, s.t);
+        camera.position.x = fx.shake.x;
+        camera.position.y = fx.shake.y;
         renderer.render(scene, camera);
       };
       loop();
@@ -264,11 +284,12 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
       cleanup = () => {
         cancelAnimationFrame(raf);
         ro.disconnect();
-        canvas.removeEventListener("pointermove", onMove);
-        canvas.removeEventListener("pointerleave", onLeave);
-        canvas.removeEventListener("click", onClick);
+        el.removeEventListener("pointermove", onMove);
+        el.removeEventListener("pointerleave", onLeave);
+        el.removeEventListener("click", onClick);
         slots.forEach((sl) => sl.foil.dispose());
         ambience.dispose();
+        fx.dispose();
         env.dispose();
         pmrem.dispose();
         renderer.dispose();
