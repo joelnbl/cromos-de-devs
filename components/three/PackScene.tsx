@@ -243,6 +243,11 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
     const bodyMat = foil(bodyFrontTex);
     const stripMat = foil(stripFrontTex);
     const backMat = foil(plainTex);
+    // La tira usa materiales propios para poder desvanecerse sin afectar al cuerpo
+    const stripSideMat = foil(plainTex);
+    const stripBackMat = foil(plainTex);
+    const stripMats = [stripSideMat, stripMat, stripBackMat];
+    const reduceMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const pack = new THREE.Group();
     scene.add(pack);
@@ -250,7 +255,7 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
     const body = new THREE.Mesh(bodyGeo, [sideMat, sideMat, sideMat, sideMat, bodyMat, backMat]);
     body.position.y = -STRIP / 2;
     const stripGeo = new THREE.BoxGeometry(W, STRIP, D);
-    const strip = new THREE.Mesh(stripGeo, [sideMat, sideMat, sideMat, sideMat, stripMat, backMat]);
+    const strip = new THREE.Mesh(stripGeo, [stripSideMat, stripSideMat, stripSideMat, stripSideMat, stripMat, stripBackMat]);
     const stripPivot = new THREE.Group();
     stripPivot.position.set(-W / 2, H / 2 - STRIP, 0);
     strip.position.set(W / 2, STRIP / 2, 0);
@@ -291,6 +296,92 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
       sparkGeo.attributes.position.needsUpdate = true;
     };
 
+    // Luz que escapa por la abertura
+    const gapY = H / 2 - STRIP;
+    const gapLight = new THREE.PointLight(0xfff0c0, 0, 7);
+    gapLight.position.set(0, gapY, 0.6);
+    scene.add(gapLight);
+    const beamTex = makeGlowTexture("rgba(255,236,170,1)");
+    const beamMat = new THREE.SpriteMaterial({ map: beamTex, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
+    const beam = new THREE.Sprite(beamMat);
+    beam.position.set(0, gapY, 0.35);
+    beam.scale.set(W * 1.7, 1.1, 1);
+    scene.add(beam);
+
+    // Fibras de papel al rasgar
+    const FN = 90;
+    const fibGeo = new THREE.BufferGeometry();
+    const fibPos = new Float32Array(FN * 3).fill(-50);
+    const fibVel = new Float32Array(FN * 3);
+    fibGeo.setAttribute("position", new THREE.BufferAttribute(fibPos, 3));
+    const fibTex = makeGlowTexture("rgba(255,248,225,1)");
+    const fibMat = new THREE.PointsMaterial({ size: 0.075, map: fibTex, transparent: true, opacity: 0.95, depthWrite: false, color: 0xfff4d6 });
+    const fibers = new THREE.Points(fibGeo, fibMat);
+    fibers.frustumCulled = false;
+    scene.add(fibers);
+    let fibNext = 0;
+    const spawnFiber = (x: number) => {
+      const v = new THREE.Vector3(x, gapY, 0.05);
+      pack.localToWorld(v);
+      const i = fibNext++ % FN;
+      fibPos[i * 3] = v.x + (Math.random() - 0.5) * 0.05;
+      fibPos[i * 3 + 1] = v.y + (Math.random() - 0.5) * 0.04;
+      fibPos[i * 3 + 2] = v.z + 0.05;
+      fibVel[i * 3] = (Math.random() - 0.5) * 0.7;
+      fibVel[i * 3 + 1] = Math.random() * 0.5;
+      fibVel[i * 3 + 2] = (Math.random() - 0.3) * 0.5;
+    };
+
+    // Confeti de foil
+    const CN = 40;
+    const confGeo = new THREE.PlaneGeometry(0.17, 0.11);
+    const confMat = foil(plainTex);
+    confMat.side = THREE.DoubleSide;
+    const confetti = new THREE.InstancedMesh(confGeo, confMat, CN);
+    confetti.frustumCulled = false;
+    confetti.visible = false;
+    confetti.count = 0;
+    scene.add(confetti);
+    const cPos = new Float32Array(CN * 3);
+    const cVel = new Float32Array(CN * 3);
+    const cRot = new Float32Array(CN * 3);
+    const cSpin = new Float32Array(CN * 3);
+    const cPhase = new Float32Array(CN);
+    const cScale = new Float32Array(CN).fill(1);
+    const cDummy = new THREE.Object3D();
+    const cColor = new THREE.Color();
+    let confAge = -1;
+    const burstConfetti = (legendary: boolean) => {
+      const n = legendary ? 40 : 28;
+      confetti.count = n;
+      confetti.visible = true;
+      for (let i = 0; i < n; i++) {
+        cPos[i * 3] = (Math.random() - 0.5) * W * 0.9;
+        cPos[i * 3 + 1] = gapY + Math.random() * 0.1;
+        cPos[i * 3 + 2] = 0.15 + Math.random() * 0.2;
+        const a = Math.PI / 2 + (Math.random() - 0.5) * 1.8;
+        const sp = 2.5 + Math.random() * 3.5;
+        cVel[i * 3] = Math.cos(a) * sp;
+        cVel[i * 3 + 1] = Math.sin(a) * sp;
+        cVel[i * 3 + 2] = Math.random() * 1.8;
+        for (let k = 0; k < 3; k++) {
+          cRot[i * 3 + k] = Math.random() * Math.PI * 2;
+          cSpin[i * 3 + k] = (Math.random() - 0.5) * 16;
+        }
+        cPhase[i] = Math.random() * 6.28;
+        cScale[i] = 0.7 + Math.random() * 0.9;
+        if (legendary) cColor.setHSL(Math.random(), 0.85, 0.62);
+        else cColor.setRGB(0.85 + Math.random() * 0.25, 0.85 + Math.random() * 0.2, 0.7 + Math.random() * 0.3);
+        confetti.setColorAt(i, cColor);
+      }
+      if (confetti.instanceColor) confetti.instanceColor.needsUpdate = true;
+      confAge = 0;
+    };
+
+    // Física de la tira arrancada
+    const sv = { vx: 0, vy: 0, vz: 0, wz: 0, wx: 0, wy: 0 };
+    let gapK = 0;
+
     // --- Estado
     const s = {
       phase: "idle" as "idle" | "dragging" | "strip" | "waiting" | "suspense" | "burst" | "done",
@@ -315,10 +406,31 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
     const startTear = () => {
       if (s.phase !== "idle" && s.phase !== "dragging") return;
       interact();
+      sfx.tear();
+      if (reduceMotion) {
+        // Sin movimiento: apertura directa
+        stripPivot.visible = false;
+        s.phase = "waiting";
+        s.phaseT = 0;
+        return;
+      }
       s.phase = "strip";
       s.phaseT = 0;
-      sfx.tear();
+      // Pasar el pivote al centro de la tira para que gire sobre sí misma
+      const rz = stripPivot.rotation.z;
+      const ox = W / 2;
+      const oy = STRIP / 2;
+      stripPivot.position.x += ox * Math.cos(rz) - oy * Math.sin(rz);
+      stripPivot.position.y += ox * Math.sin(rz) + oy * Math.cos(rz);
+      strip.position.set(0, 0, 0);
+      sv.vx = 1.4 + Math.random() * 0.6;
+      sv.vy = 4.2;
+      sv.vz = 2.2;
+      sv.wz = 5 + Math.random() * 3;
+      sv.wx = (Math.random() - 0.5) * 6;
+      sv.wy = (Math.random() - 0.5) * 6;
       burstSparks(false);
+      burstConfetti(cb.current.getLegendary() === true);
     };
     api.current = { tear: startTear };
 
@@ -346,6 +458,10 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
         if (s.t - s.lastCrinkle > 0.07 && Math.abs(dx) > 0.02) {
           s.lastCrinkle = s.t;
           sfx.crinkle();
+        }
+        if (!reduceMotion && Math.abs(dx) > 0.02) {
+          const x = -W / 2 + s.progress * W;
+          for (let k = 0; k < 2; k++) spawnFiber(x);
         }
         if (s.progress >= 1) startTear();
       }
@@ -406,18 +522,29 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
         pack.rotation.set(s.tilt.y * 0.5 + 0.05, s.tilt.x * 0.9 + Math.sin(s.t * 0.7) * 0.08, Math.sin(s.t * 1.1) * 0.02);
         const p = s.phase === "dragging" ? s.progress : Math.max(0, s.progress - dt * 3);
         if (s.phase === "idle") s.progress = p;
-        stripPivot.rotation.z = p * 0.35;
-        stripPivot.position.y = H / 2 - STRIP + p * 0.08;
+        // La parte rasgada se levanta y se dobla; el resto sigue pegado
+        stripPivot.rotation.z = p * 0.42;
+        stripPivot.rotation.x = -p * 0.3;
+        stripPivot.rotation.y = p * 0.12;
+        stripPivot.position.y = H / 2 - STRIP + p * 0.1;
+        stripPivot.position.z = p * 0.2;
+        gapK = p * 0.35;
       }
 
       if (s.phase === "strip") {
-        // La tira sale volando
-        const k = Math.min(1, s.phaseT / 0.55);
-        stripPivot.rotation.z = 0.35 + k * 1.4;
-        stripPivot.position.set(-W / 2 + k * 1.6, H / 2 - STRIP + k * 2.4, k * 0.8);
-        strip.material.forEach((m: THREE.Material) => ((m as THREE.MeshPhysicalMaterial).opacity = 1 - k));
+        // La tira sale volando: velocidad, gravedad y giro
+        sv.vy -= 9 * dt;
+        stripPivot.position.x += sv.vx * dt;
+        stripPivot.position.y += sv.vy * dt;
+        stripPivot.position.z += sv.vz * dt;
+        stripPivot.rotation.z += sv.wz * dt;
+        stripPivot.rotation.x += sv.wx * dt;
+        stripPivot.rotation.y += sv.wy * dt;
+        const fade = Math.max(0, Math.min(1, (s.phaseT - 0.35) / 0.3));
+        stripMats.forEach((m) => (m.opacity = 1 - fade));
+        gapK = Math.min(0.7, s.phaseT / 0.5 * 0.7);
         shake = 0.02;
-        if (k >= 1) {
+        if (s.phaseT >= 0.7) {
           stripPivot.visible = false;
           s.phase = "waiting";
           s.phaseT = 0;
@@ -442,6 +569,7 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
         const em = k * 0.9;
         [bodyMat, sideMat, backMat].forEach((m) => (m.emissiveIntensity = em));
         goldLight.intensity = k * 30;
+        gapK = 0.7 + k * 0.3;
         glowMat.opacity = k * 0.8;
         glow.scale.setScalar(4 + k * 2);
         if (k >= 1) {
@@ -457,6 +585,7 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
         pack.position.y = -k * k * 5;
         pack.rotation.x = k * 0.6;
         glowMat.opacity = Math.max(glowMat.opacity, (1 - k) * 1);
+        gapK = (s.legendary ? 1 : 0.8) * (1 - k * k);
         glow.scale.setScalar(5 + k * 6);
         if (k >= 1) {
           s.phase = "done";
@@ -469,6 +598,59 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
         pack.rotation.z = (Math.random() - 0.5) * shake * 1.5;
       } else if (s.phase !== "burst") {
         pack.position.x *= 0.8;
+      }
+
+      // Luz por la abertura (sin parpadeos con movimiento reducido)
+      if (s.phase === "done" || reduceMotion) gapK = 0;
+      const gk = s.legendary ? 1 : 0.65;
+      gapLight.intensity = gapK * gk * (s.legendary ? 45 : 16);
+      beamMat.opacity = Math.min(1, gapK * gk * (s.legendary ? 1.2 : 0.9));
+      beam.scale.set(W * (1.5 + gapK * 0.7), 0.7 + gapK * (s.legendary ? 1.6 : 0.9), 1);
+      if (s.legendary) {
+        const hue = (s.t * 0.6) % 1;
+        gapLight.color.setHSL(hue, 0.9, 0.62);
+        beamMat.color.setHSL(hue, 0.85, 0.72);
+      } else {
+        gapLight.color.set(0xfff0c0);
+        beamMat.color.set(0xffffff);
+      }
+
+      // Fibras de papel
+      for (let i = 0; i < FN; i++) {
+        if (fibPos[i * 3 + 1] < -40) continue;
+        fibVel[i * 3 + 1] -= 3.2 * dt;
+        fibVel[i * 3] *= 1 - 1.5 * dt;
+        fibPos[i * 3] += fibVel[i * 3] * dt;
+        fibPos[i * 3 + 1] += fibVel[i * 3 + 1] * dt;
+        fibPos[i * 3 + 2] += fibVel[i * 3 + 2] * dt;
+        if (fibPos[i * 3 + 1] < -3) fibPos[i * 3 + 1] = -50;
+      }
+      fibGeo.attributes.position.needsUpdate = true;
+
+      // Confeti de foil
+      if (confAge >= 0) {
+        confAge += dt;
+        for (let i = 0; i < confetti.count; i++) {
+          cVel[i * 3 + 1] -= 6 * dt;
+          const drag = 1 - 1.3 * dt;
+          cVel[i * 3] = cVel[i * 3] * drag + Math.sin(confAge * 4 + cPhase[i]) * 0.8 * dt;
+          cVel[i * 3 + 1] *= drag;
+          cVel[i * 3 + 2] *= drag;
+          cPos[i * 3] += cVel[i * 3] * dt;
+          cPos[i * 3 + 1] += cVel[i * 3 + 1] * dt;
+          cPos[i * 3 + 2] += cVel[i * 3 + 2] * dt;
+          for (let k = 0; k < 3; k++) cRot[i * 3 + k] += cSpin[i * 3 + k] * dt;
+          cDummy.position.set(cPos[i * 3], cPos[i * 3 + 1], cPos[i * 3 + 2]);
+          cDummy.rotation.set(cRot[i * 3], cRot[i * 3 + 1], cRot[i * 3 + 2]);
+          cDummy.scale.setScalar(cScale[i] * Math.max(0, Math.min(1, (3 - confAge) / 0.8)));
+          cDummy.updateMatrix();
+          confetti.setMatrixAt(i, cDummy.matrix);
+        }
+        confetti.instanceMatrix.needsUpdate = true;
+        if (confAge > 3) {
+          confAge = -1;
+          confetti.visible = false;
+        }
       }
 
       // Chispas
@@ -487,7 +669,7 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
       renderer.render(scene, camera);
     };
     // Las tiras usan transparencia para desvanecerse
-    strip.material.forEach((m: THREE.Material) => (m.transparent = true));
+    stripMats.forEach((m) => (m.transparent = true));
     loop();
 
     return () => {
@@ -500,9 +682,10 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
       canvas.removeEventListener("pointercancel", onUp);
       canvas.removeEventListener("pointerleave", onLeave);
       api.current = null;
-      [bodyGeo, stripGeo, sparkGeo].forEach((g) => g.dispose());
-      [sideMat, bodyMat, stripMat, backMat, glowMat, sparkMat].forEach((m) => m.dispose());
-      [frontTex, plainTex, bodyFrontTex, stripFrontTex, normal, glowTex, sparkTex, envTex].forEach((t) => t.dispose());
+      [bodyGeo, stripGeo, sparkGeo, fibGeo, confGeo].forEach((g) => g.dispose());
+      confetti.dispose();
+      [sideMat, bodyMat, stripMat, backMat, stripSideMat, stripBackMat, confMat, glowMat, sparkMat, beamMat, fibMat].forEach((m) => m.dispose());
+      [frontTex, plainTex, bodyFrontTex, stripFrontTex, normal, glowTex, sparkTex, beamTex, fibTex, envTex].forEach((t) => t.dispose());
       pmrem.dispose();
       renderer.dispose();
       canvas.remove();

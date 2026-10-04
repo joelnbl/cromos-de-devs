@@ -40,6 +40,7 @@ export function AlbumBook({
   const [open, setOpen] = useState<Card | null>(null);
   const [copied, setCopied] = useState(false);
   const touch = useRef<{ x: number; y: number } | null>(null);
+  const [flip, setFlip] = useState<{ dir: 1 | -1; wide: boolean; href: string } | null>(null);
 
   const cards = sheets.flatMap((s) => s.cards);
   const mine = cards.filter((c) => owned[c.id]);
@@ -68,6 +69,22 @@ export function AlbumBook({
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  /** Pasa de página: la hoja gira sobre el lomo y luego se navega. Sin movimiento, cambio directo. */
+  const turn = (dir: 1 | -1, href: string) => {
+    if (flip) return;
+    sfx.page();
+    if (reduce) {
+      router.push(href, { scroll: false });
+      return;
+    }
+    setFlip({ dir, wide: window.matchMedia("(min-width: 768px)").matches, href });
+  };
+  const onLinkClick = (e: React.MouseEvent, dir: 1 | -1, href: string) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    turn(dir, href);
+  };
+
   // Deslizar a los lados: pasa la página del álbum, o el cromo si hay uno abierto
   const onTouchStart = (e: React.TouchEvent) => {
     touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -81,10 +98,7 @@ export function AlbumBook({
     if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     if (inModal) return step(dx < 0 ? 1 : -1);
     const target = dx < 0 ? next : prev;
-    if (target) {
-      sfx.page();
-      router.push(target.href, { scroll: false });
-    }
+    if (target) turn(dx < 0 ? 1 : -1, target.href);
   };
 
   const askMissing = async () => {
@@ -198,11 +212,61 @@ export function AlbumBook({
             </ul>
           </div>
         ))}
+        {flip && (
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[3]" style={{ perspective: 1800 }}>
+            {flip.wide && (
+              <motion.div
+                className="absolute inset-y-0 w-1/2"
+                style={{
+                  [flip.dir === 1 ? "left" : "right"]: 0,
+                  background: "linear-gradient(90deg, rgba(0,0,0,0.38), rgba(0,0,0,0))",
+                  ...(flip.dir === -1 && { transform: "scaleX(-1)" }),
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 0.9, 0] }}
+                transition={{ duration: 0.55, ease: "easeInOut" }}
+              />
+            )}
+            <motion.div
+              className={`absolute inset-y-0 ${flip.wide ? "w-1/2" : "w-full"}`}
+              style={{
+                [flip.dir === 1 ? (flip.wide ? "right" : "left") : flip.wide ? "left" : "right"]: 0,
+                transformOrigin: flip.dir === 1 ? (flip.wide ? "left center" : "left center") : "right center",
+                transformStyle: "preserve-3d",
+              }}
+              initial={{ rotateY: 0, opacity: 1 }}
+              animate={
+                flip.wide
+                  ? { rotateY: flip.dir === 1 ? -180 : 180 }
+                  : { rotateY: flip.dir === 1 ? -100 : 100, opacity: [1, 1, 0.4] }
+              }
+              transition={{ duration: 0.55, ease: [0.45, 0.05, 0.25, 1] }}
+              onAnimationComplete={() => router.push(flip.href, { scroll: false })}
+            >
+              <div className="album-paper absolute inset-0 bg-[#fbfaf5]" style={{ backfaceVisibility: "hidden" }}>
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(${flip.dir === 1 ? 90 : 270}deg, rgba(0,0,0,0.2), rgba(0,0,0,0) 22%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.14))`,
+                  }}
+                />
+              </div>
+              <div className="album-paper absolute inset-0 bg-[#f1efe4]" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(${flip.dir === 1 ? 270 : 90}deg, rgba(0,0,0,0.22), rgba(0,0,0,0) 25%, rgba(0,0,0,0) 75%, rgba(0,0,0,0.1))`,
+                  }}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
       </section>
 
       <nav aria-label={t.album.albumsAria} className="flex flex-wrap items-center justify-between gap-3 pb-6 pt-2">
         {prev ? (
-          <Link href={prev.href} scroll={false} onClick={() => sfx.page()} aria-label={t.album.prevAria} className="btn btn-ghost border-2 border-ink bg-white">
+          <Link href={prev.href} scroll={false} onClick={(e) => onLinkClick(e, -1, prev.href)} aria-label={t.album.prevAria} className="btn btn-ghost border-2 border-ink bg-white">
             <ChevronIcon dir="left" />
             <span className="hidden sm:inline">{prev.label}</span>
           </Link>
@@ -228,7 +292,7 @@ export function AlbumBook({
           </span>
         </p>
         {next ? (
-          <Link href={next.href} scroll={false} onClick={() => sfx.page()} aria-label={t.album.nextAria} className="btn btn-dark">
+          <Link href={next.href} scroll={false} onClick={(e) => onLinkClick(e, 1, next.href)} aria-label={t.album.nextAria} className="btn btn-dark">
             <span className="hidden sm:inline">{next.label}</span>
             <ChevronIcon dir="right" />
           </Link>
