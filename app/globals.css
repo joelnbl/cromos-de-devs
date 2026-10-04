@@ -637,3 +637,23 @@ body {
 }
 
 }
+
+/* ---------- Álbum ---------- */
+@layer components {
+  .album-paper {
+    background-image: radial-gradient(rgba(17, 17, 17, 0.07) 1px, transparent 1.2px);
+    background-size: 14px 14px;
+  }
+  .album-slot {
+    --w: min(40vw, 156px);
+  }
+  @media (min-width: 640px) {
+    .album-slot {
+      --w: 150px;
+    }
+  }
+  .album-missing {
+    width: var(--w);
+    aspect-ratio: 63 / 88;
+  }
+}

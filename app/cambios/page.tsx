@@ -22,8 +22,8 @@ type TradeRow = {
   want: MiniCardData;
 };
 
-export default async function CambiosPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function CambiosPage({ searchParams }: { searchParams: Promise<{ error?: string; dar?: string; busco?: string }> }) {
+  const { error, dar, busco } = await searchParams;
   const [{ supabase, user }, { t }] = await Promise.all([getUser(), getT()]);
   if (supabase && !user) redirect("/?error=needLogin");
   const message = errorText(t, error);
@@ -86,7 +86,7 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
             <form action={createTrade} className="mt-5 flex flex-col gap-4">
               <label className="flex flex-col gap-2 font-bold">
                 {t.trades.give}
-                <select name="offer" required className="min-h-12 rounded-xl border-2 border-ink bg-white px-3 font-semibold">
+                <select name="offer" required defaultValue={dar} key={`o${dar ?? ""}`} className="min-h-12 rounded-xl border-2 border-ink bg-white px-3 font-semibold">
                   {duplicates.map(({ card, quantity }) => (
                     <option key={card.id} value={card.id}>
                       #{cardNumber(card.id)} {card.name ?? card.login} ({t.trades.youHave(quantity)})
@@ -96,7 +96,7 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
               </label>
               <label className="flex flex-col gap-2 font-bold">
                 {t.trades.want}
-                <select name="want" required className="min-h-12 rounded-xl border-2 border-ink bg-white px-3 font-semibold">
+                <select name="want" required defaultValue={busco} key={`w${busco ?? ""}`} className="min-h-12 rounded-xl border-2 border-ink bg-white px-3 font-semibold">
                   {missing.map((card) => (
                     <option key={card.id} value={card.id}>
                       #{cardNumber(card.id)} {card.name ?? card.login}
