@@ -51,3 +51,6 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 - **T-23** Primeros pasos: tira de 3 pasos en Mi cromo y aviso en el álbum para abrir el primer sobre (Sonnet). ✔
 - **QA** 12 rutas × móvil/escritorio × es/en sin fallos (Haiku). ✔
 - **T-16** Insignias en Mi cromo calculadas con datos existentes (11 insignias, sin tablas nuevas) (Sonnet). ✔
+- **T-24** «Su mundo»: mundo 3D de cada dev con sus datos reales (torres de cristal por repo, holograma, cielo de estrellas, commits en espiral, anillos por año) desde /c/ y el álbum (Sonnet). ✔
+- **T-25** Sonidos rehechos uno a uno con bus maestro, compresor y reverb; medidos sin saturar (Sonnet). ✔
+- **T-26** Cromo premium: holo y brillo que siguen al dedo, canto grueso, grano de impresión, relieve y destello al tocar (Sonnet; ajuste del dorado de la legendaria por el coordinador). ✔

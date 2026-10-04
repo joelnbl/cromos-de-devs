@@ -539,6 +539,137 @@ body {
   .cromo[data-rarity="icono"] { animation: none; }
 }
 
+/* --- T-26 · Carta física premium: foil, canto, grano, relieve, pulsación --- */
+
+.cromo {
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -.45'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --edge: #d8c9b4;
+  --edge-dark: #8d7a62;
+  --holo: 0.14;
+  --grain: 0.16;
+}
+.cromo[data-rarity="rara"] { --edge: #d3dbe3; --edge-dark: #7c8794; --holo: 0.4; }
+.cromo[data-rarity="epica"] { --edge: #ecd88f; --edge-dark: #9a7418; --holo: 0.65; }
+.cromo[data-rarity="legendaria"] { --edge: #f4dc7a; --edge-dark: #a27a14; --holo: 0.45; --grain: 0.22; }
+.cromo[data-rarity="icono"] { --edge: #e4d9ff; --edge-dark: #6c52b8; --holo: 1; }
+
+/* Cartulina gruesa: canto en capas que aparece según la inclinación + sombra proyectada móvil */
+.cromo-front {
+  box-shadow:
+    0 0 3.3em var(--glow),
+    calc(var(--lx) * -0.1em) calc(var(--ly) * 0.1em + 0.04em) 0 var(--edge),
+    calc(var(--lx) * -0.2em) calc(var(--ly) * 0.2em + 0.08em) 0 var(--edge),
+    calc(var(--lx) * -0.3em) calc(var(--ly) * 0.3em + 0.12em) 0 var(--edge-dark),
+    calc(var(--lx) * -0.4em) calc(var(--ly) * 0.4em + 0.16em) 0 var(--edge-dark),
+    calc(var(--lx) * -1.6em) calc(var(--ly) * -1em + 1.6em) 3em -0.4em rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+    inset 0 0.08em 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Troquel (borde interior fino) y grano de impresión */
+.cromo-body::before {
+  content: "";
+  position: absolute;
+  inset: 0.28em;
+  border-radius: 0.68em;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  z-index: 5;
+}
+.cromo[data-rarity="legendaria"] .cromo-body::before { border-color: rgba(255, 255, 255, 0.6); box-shadow: inset 0 0 0 1px rgba(90, 60, 0, 0.2); }
+.cromo-body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--noise);
+  background-size: 9em 9em;
+  opacity: var(--grain);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 4;
+}
+.cromo-back .cromo-body::before,
+.cromo-back .cromo-body::after { display: none; }
+
+/* Luz que sigue al dedo: foil rico (rayado fino + cónico + ruido) */
+.cromo-holo {
+  z-index: 3;
+  background-image:
+    var(--noise),
+    repeating-linear-gradient(115deg, rgba(255, 0, 150, 0.5) 0 0.25em, rgba(0, 220, 255, 0.5) 0.25em 0.5em, rgba(255, 240, 0, 0.5) 0.5em 0.75em, rgba(120, 255, 160, 0.5) 0.75em 1em),
+    conic-gradient(from calc(var(--lx) * 70deg) at var(--mx) var(--my), #ff4fa8, #ffd24a, #5dffa8, #4fc3ff, #a47cff, #ff4fa8);
+  background-size: 8em 8em, 300% 300%, 100% 100%;
+  background-position: calc(var(--lx) * 4em) calc(var(--ly) * 4em), var(--mx) var(--my), 0 0;
+  background-blend-mode: normal, overlay, normal;
+  mix-blend-mode: color-dodge;
+  opacity: calc(var(--holo) * (0.4 + var(--o) * 0.6));
+  transition: opacity 0.3s ease;
+  -webkit-mask: linear-gradient(115deg, rgba(0, 0, 0, 0.35), #000 calc(var(--mx) * 0.6 + 10%), rgba(0, 0, 0, 0.35));
+  mask: linear-gradient(115deg, rgba(0, 0, 0, 0.35), #000 calc(var(--mx) * 0.6 + 10%), rgba(0, 0, 0, 0.35));
+}
+.cromo[data-rarity="icono"] .cromo-holo {
+  background-image:
+    var(--noise),
+    repeating-linear-gradient(115deg, rgba(255, 0, 150, 0.5) 0 0.25em, rgba(0, 220, 255, 0.5) 0.25em 0.5em, rgba(255, 240, 0, 0.5) 0.5em 0.75em, rgba(120, 255, 160, 0.5) 0.75em 1em),
+    conic-gradient(from calc(var(--spin) + var(--lx) * 70deg) at var(--mx) var(--my), #ff4fa8, #ffd24a, #5dffa8, #4fc3ff, #a47cff, #ff4fa8);
+  mix-blend-mode: color-dodge;
+}
+.cromo[data-rarity="legendaria"] .cromo-holo { mix-blend-mode: soft-light; filter: sepia(0.6) saturate(1.4) hue-rotate(-10deg); }
+.cromo-glare {
+  background:
+    radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12) 22%, transparent 48%),
+    radial-gradient(farthest-corner circle at var(--mx) var(--my), rgba(255, 255, 255, 0.3), transparent 60%);
+  mix-blend-mode: soft-light;
+  opacity: calc(0.25 + var(--o) * 0.75);
+}
+
+/* Relieve estampado: nombre y números */
+.cromo[data-rarity="legendaria"] .cromo-name,
+.cromo[data-rarity="legendaria"] .cromo-stat-value,
+.cromo[data-rarity="legendaria"] .cromo-num {
+  text-shadow:
+    0 -0.03em 0 rgba(90, 60, 0, 0.55),
+    0 0.04em 0 rgba(255, 255, 255, 0.85),
+    0 0.09em 0.04em rgba(255, 255, 255, 0.35),
+    0 0.14em 0.14em rgba(90, 60, 0, 0.3);
+}
+.cromo[data-rarity="icono"] .cromo-name {
+  filter:
+    drop-shadow(0 -0.025em 0 rgba(255, 255, 255, 0.75))
+    drop-shadow(0 0.06em 0 rgba(70, 30, 120, 0.85))
+    drop-shadow(0 0.12em 0.08em rgba(0, 0, 0, 0.5));
+}
+.cromo[data-rarity="icono"] .cromo-stat-value {
+  text-shadow:
+    0 -0.03em 0 rgba(255, 255, 255, 0.6),
+    0 0.05em 0 rgba(70, 30, 120, 0.9),
+    0 0.12em 0.12em rgba(0, 0, 0, 0.5);
+}
+
+/* Pulsación táctil: pequeño hundimiento + ráfaga de brillo */
+.cromo[data-interactive="true"]:active .cromo-tilt { scale: 0.972; }
+.cromo-sweep { overflow: hidden; }
+.cromo-sweep::after {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%);
+  opacity: 0;
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.cromo[data-burst="true"] .cromo-sweep::after { animation: cromo-burst 0.65s ease-out; }
+@keyframes cromo-burst {
+  0% { opacity: 0.95; transform: translateX(-120%); }
+  100% { opacity: 0; transform: translateX(120%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cromo[data-interactive="true"]:active .cromo-tilt { scale: 1; }
+  .cromo[data-burst="true"] .cromo-sweep::after { animation: none; }
+  .cromo-holo, .cromo-glare { transition: none; }
+}
+
 /* --- Reverso ----------------------------------------------------------- */
 
 .cromo-back .cromo-body {

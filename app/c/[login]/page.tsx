@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cromo } from "@/components/Cromo";
+import { DevWorldButton } from "@/components/DevWorldButton";
 import { cardByLogin } from "@/lib/data";
 import { RARITIES } from "@/lib/cards";
 import { getUser } from "@/lib/supabase/server";
@@ -50,7 +51,12 @@ export default async function CardPage({ params }: { params: Promise<Params> }) 
       />
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 md:grid-cols-[auto_1fr]">
         <div className="flex justify-center">
-          <Cromo card={card} className="[--w:min(82vw,330px)]" />
+          <div className="flex flex-col items-center gap-5">
+            <Cromo card={card} className="[--w:min(82vw,330px)]" />
+            <div className="w-full max-w-[330px]">
+              <DevWorldButton card={card} />
+            </div>
+          </div>
         </div>
         <div>
           <p className="font-mono text-sm font-bold uppercase text-sun">

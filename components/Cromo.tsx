@@ -74,6 +74,18 @@ export function Cromo({ card, width, interactive = true, faceDown = false, eager
     [interactive],
   );
 
+  const onDown = useCallback(
+    (e: PointerEvent<HTMLDivElement>) => {
+      const el = ref.current;
+      if (!interactive || !el) return;
+      onMove(e);
+      delete el.dataset.burst;
+      void el.offsetWidth;
+      el.dataset.burst = "true";
+    },
+    [interactive, onMove],
+  );
+
   const onLeave = useCallback(() => {
     const el = ref.current;
     if (!el) return;
@@ -90,7 +102,12 @@ export function Cromo({ card, width, interactive = true, faceDown = false, eager
       data-interactive={interactive}
       data-facedown={faceDown}
       onPointerMove={onMove}
+      onPointerDown={onDown}
       onPointerLeave={onLeave}
+      onPointerCancel={onLeave}
+      onAnimationEnd={(e) => {
+        if (e.animationName === "cromo-burst") delete e.currentTarget.dataset.burst;
+      }}
       style={{ ...(width ? { "--w": `${width}px` } : {}), "--type": lang.color, ...style } as CSSProperties}
       role="img"
       aria-label={t.card.aria(rarity.label, displayName, card.login, langName)}
@@ -164,7 +181,7 @@ export function Cromo({ card, width, interactive = true, faceDown = false, eager
               </div>
             </div>
             <div className="cromo-sweep" />
-            {(card.rarity === "legendaria" || card.rarity === "icono") && <div className="cromo-holo" />}
+            <div className="cromo-holo" />
             <div className="cromo-glare" />
           </div>
         </div>

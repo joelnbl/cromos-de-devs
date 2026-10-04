@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Cromo } from "./Cromo";
+import { DevWorldButton } from "./DevWorldButton";
 import { cardNumber, RARITIES, type Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
 import { useT } from "@/lib/i18n/client";
@@ -304,6 +305,7 @@ export function AlbumBook({
               <Link href={`/c/${open.login}`} className="btn btn-ghost w-full justify-center border-2 border-white/70 text-white hover:bg-white/10">
                 {t.album.seePage}
               </Link>
+              <DevWorldButton card={open} />
             </div>
           </motion.div>
         )}

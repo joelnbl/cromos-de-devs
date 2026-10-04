@@ -283,6 +283,17 @@ const es = {
     albumNudge: "Abre tu primer sobre",
     albumNudgeCta: "Abrir sobre",
   },
+  world: {
+    title: "Su mundo",
+    enter: "Entrar en su mundo",
+    close: "Cerrar",
+    help: "Arrastra para girar · pellizca o usa la rueda para acercar",
+    aria: (name: string) => `Mundo en 3D de ${name}. Arrastra para girar.`,
+    failed: "Tu navegador no puede mostrar el mundo en 3D. Aquí tienes su cromo.",
+    stats: (stars: string, commits: string, repos: string, year: string) =>
+      `${stars} estrellas · ${commits} commits · ${repos} repos · desde ${year}`,
+    noRepos: "Aún sin proyectos destacados",
+  },
   showcase: {
     aria: "Tu cromo en 3D. Arrastra para girarlo.",
     drag: "Arrastra para girarla",
@@ -729,6 +740,17 @@ const en: Dict = {
     tradeCta: "Go to Trades",
     albumNudge: "Open your first pack",
     albumNudgeCta: "Open a pack",
+  },
+  world: {
+    title: "Their world",
+    enter: "Enter their world",
+    close: "Close",
+    help: "Drag to turn · pinch or use the wheel to zoom",
+    aria: (name: string) => `${name}'s 3D world. Drag to turn.`,
+    failed: "Your browser can't show the 3D world. Here is their card.",
+    stats: (stars: string, commits: string, repos: string, year: string) =>
+      `${stars} stars · ${commits} commits · ${repos} repos · since ${year}`,
+    noRepos: "No featured projects yet",
   },
   showcase: {
     aria: "Your card in 3D. Drag to turn it.",
