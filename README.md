@@ -48,8 +48,17 @@ pnpm dev
 ## Cómo está hecho
 
 - Next.js 16 (App Router) + React 19 + TypeScript + Tailwind 4.
-- `motion` para las animaciones. El holo, el relieve y la inclinación 3D son CSS puro
-  (`app/globals.css`, sección «El cromo»), sin Three.js: pesa menos y va fluido en móviles.
+- Cartas en CSS (`app/globals.css`, sección «El cromo»): negras con borde de 1 px que se
+  ilumina según la rareza, relieve, purpurina y holo que siguen al puntero.
+- Three.js (solo se descarga en «Sobre» y «Mi cromo»):
+  - `components/three/PackScene.tsx`: sobre de aluminio en 3D que se rasga deslizando el dedo,
+    con chispas, destello y suspense dorado cuando trae una legendaria.
+  - `components/three/Showcase.tsx`: vitrina 3D de tu cromo y grabación de un vídeo de 5 s
+    (MediaRecorder) para compartir. La cara de la carta se saca del propio HTML con `html-to-image`.
+  - Sin WebGL o con animaciones reducidas, se usa la versión CSS.
+- Sonidos sintetizados con Web Audio (`lib/sound.ts`), sin archivos, con botón de silencio y
+  vibración en el móvil.
+- `motion` para el resto de animaciones.
 - Supabase: Auth con GitHub, Postgres con RLS en todas las tablas.
   - Las acciones del juego (`open_daily_pack`, `create_trade`, `accept_trade`, `cancel_trade`)
     son funciones de Postgres que comprueban `auth.uid()`; solo las puede llamar alguien con sesión.

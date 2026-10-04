@@ -1,16 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Cromo } from "./Cromo";
 import { Countdown } from "./Countdown";
 import { RARITIES, type Card } from "@/lib/cards";
 import { demoPack } from "@/lib/demo";
 import type { PackResult } from "@/app/actions";
+import { sfx } from "@/lib/sound";
+import { SoundToggle } from "./SoundToggle";
+
+const PackScene = dynamic(() => import("./three/PackScene"), { ssr: false });
 
 type Pull = { card: Card; isNew: boolean };
-type Phase = "idle" | "tearing" | "reveal" | "summary" | "empty" | "done-today";
+type Phase = "idle" | "tearing" | "fan" | "reveal" | "summary" | "empty" | "done-today";
 
 type Props = {
   demo: boolean;
@@ -24,41 +29,67 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
   const [pulls, setPulls] = useState<Pull[]>([]);
   const [index, setIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
   const reduce = useReducedMotion();
+  const [webglFailed, setWebglFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [tearSignal, setTearSignal] = useState(0);
+  const [dragHint, setDragHint] = useState(0);
+  const result = useRef<PackResult | null>(null);
+  const request = useRef<Promise<PackResult> | null>(null);
+  const use3d = !reduce && !webglFailed;
 
+  /** Pide las cartas una sola vez, en cuanto se toca el sobre. */
+  const fetchPack = useCallback(() => {
+    if (!request.current) {
+      const run = async (): Promise<PackResult> => {
+        if (demo || !open) return { ok: true, cards: demoPack() };
+        try {
+          return await open();
+        } catch {
+          return { ok: false, error: "No se pudo abrir el sobre. Inténtalo de nuevo." };
+        }
+      };
+      request.current = run().then((r) => (result.current = r));
+    }
+    return request.current;
+  }, [demo, open]);
+
+  const getLegendary = useCallback(() => {
+    const r = result.current;
+    if (!r) return null;
+    return r.ok && r.cards.some((c) => c.card.rarity === "legendaria");
+  }, []);
+
+  /** Se llama al terminar la animación del sobre (3D o CSS). */
+  const finishTear = useCallback(async () => {
+    const r = await fetchPack();
+    request.current = null;
+    result.current = null;
+    if (!r.ok) {
+      setError(r.error);
+      setPhase(r.error.includes("Ya abriste") ? "done-today" : "idle");
+      setAttempt((a) => a + 1);
+      return;
+    }
+    if (!r.cards.length) {
+      setPhase("empty");
+      return;
+    }
+    setPulls(r.cards);
+    setIndex(0);
+    setPhase("fan");
+    if (!reduce) sfx.whoosh();
+    setTimeout(() => setPhase("reveal"), reduce ? 0 : 1300);
+  }, [fetchPack, reduce]);
+
+  /** Sobre en CSS (sin WebGL o con animaciones reducidas). */
   const tear = () => {
-    if (phase !== "idle" || pending) return;
+    if (phase !== "idle") return;
     setError(null);
     setPhase("tearing");
-    const started = Date.now();
-    startTransition(async () => {
-      let result: PackResult;
-      if (demo || !open) {
-        result = { ok: true, cards: demoPack() };
-      } else {
-        try {
-          result = await open();
-        } catch {
-          result = { ok: false, error: "No se pudo abrir el sobre. Inténtalo de nuevo." };
-        }
-      }
-      // Deja que termine la animación de rasgado.
-      const wait = Math.max(0, (reduce ? 200 : 1300) - (Date.now() - started));
-      await new Promise((r) => setTimeout(r, wait));
-      if (!result.ok) {
-        setError(result.error);
-        setPhase(result.error.includes("Ya abriste") ? "done-today" : "idle");
-        return;
-      }
-      if (!result.cards.length) {
-        setPhase("empty");
-        return;
-      }
-      setPulls(result.cards);
-      setIndex(0);
-      setPhase("reveal");
-    });
+    sfx.tear();
+    void fetchPack();
+    setTimeout(() => void finishTear(), reduce ? 200 : 1300);
   };
 
   const next = () => {
@@ -78,7 +109,41 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
         </p>
       )}
 
-      {(phase === "idle" || phase === "tearing") && (
+      <div className="absolute right-4 top-4 z-20">
+        <SoundToggle />
+      </div>
+
+      {use3d && phase === "idle" && (
+        <div className="relative z-10 flex w-full flex-col items-center gap-4">
+          <div className="relative h-[min(54vh,500px)] w-full max-w-md">
+            <PackScene
+              key={attempt}
+              tearSignal={tearSignal}
+              onInteract={() => {
+                setError(null);
+                void fetchPack();
+              }}
+              getLegendary={getLegendary}
+              onTorn={() => void finishTear()}
+              onFail={() => setWebglFailed(true)}
+              onProgress={setDragHint}
+            />
+            <SwipeHint progress={dragHint} />
+          </div>
+          <p className="text-lg font-bold text-white" aria-live="polite">
+            Desliza el dedo sobre el sobre para rasgarlo
+          </p>
+          <button
+            type="button"
+            className="font-bold text-sun underline underline-offset-4"
+            onClick={() => setTearSignal((n) => n + 1)}
+          >
+            Abrir sin deslizar
+          </button>
+        </div>
+      )}
+
+      {!use3d && (phase === "idle" || phase === "tearing") && (
         <div className="relative z-10 flex flex-col items-center gap-8">
           <Pack tearing={phase === "tearing"} onOpen={tear} reduce={Boolean(reduce)} />
           <p className="text-lg font-bold text-white" aria-live="polite">
@@ -86,6 +151,8 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
           </p>
         </div>
       )}
+
+      {phase === "fan" && <FanOut pulls={pulls} />}
 
       {phase === "reveal" && pulls[index] && (
         <div className="relative z-10 flex flex-col items-center gap-6">
@@ -107,7 +174,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
               <RevealCard key={index} pull={pulls[index]} onNext={next} reduce={Boolean(reduce)} />
             </AnimatePresence>
           </div>
-          <button type="button" onClick={next} className="btn btn-sun">
+          <button type="button" onClick={next} className="btn btn-sun mt-6">
             {index + 1 >= pulls.length ? "Ver resumen" : "Siguiente cromo"}
           </button>
         </div>
@@ -158,6 +225,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
               onClick={() => {
                 setPhase("idle");
                 setPulls([]);
+                setAttempt((a) => a + 1);
               }}
             >
               Abrir otro (solo en modo demo)
@@ -313,9 +381,16 @@ function RevealCard({ pull, onNext, reduce }: { pull: Pull; onNext: () => void; 
   const special = pull.card.rarity === "epica" || pull.card.rarity === "legendaria";
 
   useEffect(() => {
-    const t = setTimeout(() => setFlipped(true), reduce ? 0 : 450);
-    return () => clearTimeout(t);
-  }, [reduce]);
+    const timers = [
+      setTimeout(() => {
+        setFlipped(true);
+        sfx.flip();
+        sfx.reveal(pull.card.rarity);
+      }, reduce ? 0 : 450),
+    ];
+    if (pull.isNew) timers.push(setTimeout(() => sfx.pop(), reduce ? 0 : 820));
+    return () => timers.forEach(clearTimeout);
+  }, [reduce, pull]);
 
   return (
     <motion.div
@@ -352,7 +427,7 @@ function RevealCard({ pull, onNext, reduce }: { pull: Pull; onNext: () => void; 
       </AnimatePresence>
       {flipped && special && (
         <motion.p
-          className="absolute -bottom-12 left-0 right-0 text-center font-mono text-sm font-bold text-sun"
+          className="absolute -bottom-9 left-0 right-0 text-center font-mono text-sm font-bold text-sun"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
@@ -418,6 +493,54 @@ function Burst({ legendary, reduce }: { legendary: boolean; reduce: boolean }) {
           transition={{ duration: 1.1, delay: s.delay, ease: "easeOut" }}
         />
       ))}
+    </div>
+  );
+}
+
+function SwipeHint({ progress }: { progress: number }) {
+  const reduce = useReducedMotion();
+  if (progress > 0.05) return null;
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-[24%] flex justify-center" aria-hidden="true">
+      <motion.div
+        className="flex items-center gap-2"
+        animate={reduce ? undefined : { x: [-70, 70], opacity: [0, 1, 1, 0] }}
+        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}
+      >
+        <span className="h-1 w-16 rounded-full bg-gradient-to-r from-transparent to-white" />
+        <span className="grid h-11 w-11 place-items-center rounded-full bg-white/90 text-ink shadow-[0_0_0_8px_rgba(255,255,255,0.18)]">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14" />
+            <path d="m13 6 6 6-6 6" />
+          </svg>
+        </span>
+      </motion.div>
+    </div>
+  );
+}
+
+/** Las 5 cartas salen del sobre y se abren en abanico antes de revelarse. */
+function FanOut({ pulls }: { pulls: Pull[] }) {
+  const n = pulls.length;
+  return (
+    <div className="relative z-10 grid h-[460px] w-full place-items-center" aria-live="polite">
+      <span className="sr-only">Salen {n} cromos del sobre</span>
+      {pulls.map((p, i) => {
+        const mid = (n - 1) / 2;
+        const angle = (i - mid) * 13;
+        return (
+          <motion.div
+            key={i}
+            className="absolute"
+            style={{ transformOrigin: "50% 160%" }}
+            initial={{ y: 260, scale: 0.6, rotate: 0, opacity: 0 }}
+            animate={{ y: [260, -30, 0], scale: [0.6, 1, 1], rotate: [0, angle, angle], opacity: 1 }}
+            transition={{ duration: 0.9, delay: i * 0.07, ease: [0.2, 0.9, 0.2, 1] }}
+          >
+            <Cromo card={p.card} width={200} faceDown interactive={false} />
+          </motion.div>
+        );
+      })}
     </div>
   );
 }

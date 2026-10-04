@@ -1,7 +1,7 @@
 import { SignInLink } from "@/components/SignInLink";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Cromo } from "@/components/Cromo";
+import { ShowcaseLoader } from "@/components/ShowcaseLoader";
 import { ShareButtons } from "@/components/ShareButtons";
 import { setCountry } from "@/app/actions";
 import { CARD_COLUMNS, COUNTRIES, RARITIES, type Card } from "@/lib/cards";
@@ -43,7 +43,7 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
     <main className="min-h-dvh bg-paper pb-24 md:pb-12">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-12 md:grid-cols-[auto_1fr]">
         <div className="flex justify-center">
-          <Cromo card={card} className="[--w:min(82vw,320px)]" />
+          <ShowcaseLoader card={card} />
         </div>
         <div>
           {bienvenida && (

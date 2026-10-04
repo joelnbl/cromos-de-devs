@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Cromo } from "./Cromo";
 import { cardNumber, RARITIES, type Card } from "@/lib/cards";
+import { sfx } from "@/lib/sound";
 
 export function AlbumGrid({ cards, owned }: { cards: Card[]; owned: Record<number, number> }) {
   const [open, setOpen] = useState<Card | null>(null);
@@ -41,7 +42,11 @@ export function AlbumGrid({ cards, owned }: { cards: Card[]; owned: Record<numbe
               {qty > 0 ? (
                 <button
                   type="button"
-                  onClick={() => setOpen(card)}
+                  onClick={() => {
+                    setOpen(card);
+                    sfx.flip();
+                    sfx.reveal(card.rarity);
+                  }}
                   className="relative cursor-zoom-in border-0 bg-transparent p-0"
                   aria-label={`Ver a ${card.name ?? card.login}`}
                 >
@@ -53,10 +58,19 @@ export function AlbumGrid({ cards, owned }: { cards: Card[]; owned: Record<numbe
                   )}
                 </button>
               ) : (
-                <div className="flex aspect-[63/88] w-[104px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-ink/35 text-ink/55 sm:w-[150px]">
-                  <span className="font-mono text-lg font-bold">#{cardNumber(card.id)}</span>
-                  <span className="text-xs font-bold uppercase">Te falta</span>
-                  <span className="mt-1 text-xs">{RARITIES[card.rarity].symbol}</span>
+                <div
+                  className="relative flex aspect-[63/88] w-[104px] flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border border-ink/15 sm:w-[150px]"
+                  style={{
+                    background:
+                      "repeating-linear-gradient(135deg, #dcdcd7 0 6px, #e4e4df 6px 12px)",
+                  }}
+                  aria-label={`Te falta el cromo número ${card.id}`}
+                >
+                  <span className="h-10 w-10 rounded-xl bg-ink/80 blur-[1.5px] sm:h-14 sm:w-14" aria-hidden="true" />
+                  <span className="text-[11px] font-extrabold uppercase text-ink/60 sm:text-xs">¿Quién será?</span>
+                  <span className="font-mono text-[10px] font-bold text-ink/50 sm:text-xs">
+                    #{cardNumber(card.id)} {RARITIES[card.rarity].symbol}
+                  </span>
                 </div>
               )}
             </motion.li>

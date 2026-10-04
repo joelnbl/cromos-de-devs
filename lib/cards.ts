@@ -32,10 +32,10 @@ export const RARITIES: Record<
   Rarity,
   { label: string; symbol: string; finish: string; rule: string }
 > = {
-  comun: { label: "Común", symbol: "●", finish: "Mate", rule: "Cualquiera que se registre." },
-  rara: { label: "Rara", symbol: "◆", finish: "Holo en la ilustración", rule: "50+ estrellas o 30+ seguidores." },
-  epica: { label: "Épica", symbol: "★", finish: "Relieve + holo", rule: "500+ estrellas o 200+ seguidores." },
-  legendaria: { label: "Legendaria", symbol: "✦", finish: "Dorada, relieve y arcoíris", rule: "5.000+ estrellas o 1.000+ seguidores." },
+  comun: { label: "Común", symbol: "●", finish: "Borde gris, mate", rule: "Cualquiera que se registre." },
+  rara: { label: "Rara", symbol: "◆", finish: "Borde azul, brillo frío", rule: "50+ estrellas o 30+ seguidores." },
+  epica: { label: "Épica", symbol: "★", finish: "Borde arcoíris, relieve y purpurina", rule: "500+ estrellas o 200+ seguidores." },
+  legendaria: { label: "Legendaria", symbol: "✦", finish: "Plateada, relieve y arcoíris", rule: "5.000+ estrellas o 1.000+ seguidores." },
 };
 
 export const RARITY_ORDER: Rarity[] = ["comun", "rara", "epica", "legendaria"];
