@@ -138,7 +138,7 @@ export function PackOpener({ demo, openedToday, nextAt, open, info }: Props) {
 
 
   return (
-    <div className="relative flex min-h-[640px] flex-col items-center justify-center overflow-hidden px-4 py-10">
+    <div className="relative flex min-h-[calc(100dvh-68px)] flex-col items-center justify-center overflow-hidden px-4 py-10">
       <Spotlight />
 
       {error && (
