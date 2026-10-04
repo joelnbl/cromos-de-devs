@@ -19,7 +19,7 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 
 ## Esperan a poder aplicar migraciones (Supabase bloqueado desde este entorno)
 
-- **T-10 Invitaciones con recompensa** (tabla de invitaciones; sin correos, solo enlace con código).
+- **T-10 Invitaciones con recompensa**: migración lista `20261005180000_invitaciones.sql` (tabla `referrals` + `reward_referral`; enlace `/c/<login>?ref=<login>`, cookie `ref` 30 días, máx. 50 recompensas por invitador). Sin aplicar, la web no muestra el contador y todo sigue igual.
 - **T-13 Evento del día**: migración lista `20261005170000_eventos.sql` (tabla `pack_events` + `open_daily_pack` con eventos). Crear un evento: `insert into public.pack_events (day, kind, value) values (current_date, 'boost', null);` (kinds: `boost`, `country` con value ISO de 2 letras, `language` con value = lenguaje principal).
 - **T-14 Avisos en la app** (tabla de notificaciones y disparadores al cerrar cambios).
 - **T-11 Álbum público de otros devs**: requiere decidir si la colección deja de ser privada. No se hace sin el dueño.

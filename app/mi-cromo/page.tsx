@@ -50,6 +50,19 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
   const steps = supabase && user ? await getFirstSteps(supabase, user.id, true) : null;
   const badges = supabase && user ? await getBadges(supabase, user.id, card) : null;
   const url = `${siteUrl()}/c/${card.login}`;
+  const inviteUrl = `${url}?ref=${card.login}`;
+  let invitedCount: number | null = null;
+  if (supabase && user) {
+    try {
+      const { count, error: refError } = await supabase
+        .from("referrals")
+        .select("id", { count: "exact", head: true })
+        .eq("referrer_id", user.id);
+      if (!refError && count !== null) invitedCount = count;
+    } catch {
+      invitedCount = null;
+    }
+  }
   const owners = card.owners;
 
   const rule = t.rarity[card.rarity].rule;
@@ -160,8 +173,10 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
                 <span className="display text-4xl">3</span>
                 <h3 className="font-extrabold">{t.myCard.boostInviteTitle}</h3>
                 <p className="text-sm text-ink-soft">{t.myCard.boostInviteBody}</p>
+                <p className="text-sm font-bold">{t.myCard.referral.reward}</p>
+                {invitedCount !== null && <p className="text-sm font-extrabold">{t.myCard.referral.invited(invitedCount)}</p>}
                 <p className="mt-auto break-all rounded-lg border-2 border-ink bg-white px-3 py-2 font-mono text-xs font-bold">
-                  {url}
+                  {inviteUrl}
                 </p>
               </li>
             </ol>

@@ -247,6 +247,10 @@ const es = {
     boostGiftCta: "Ir a Cambios",
     boostInviteTitle: "Invita a tus amigos devs",
     boostInviteBody: "Mándales el enlace por el chat del equipo o tu grupo de devs.",
+    referral: {
+      invited: (n: number) => (n === 1 ? "Has invitado a 1 dev" : `Has invitado a ${n} devs`),
+      reward: "Cuando alguien entra con tu enlace, su cromo va directo a tu álbum.",
+    },
   },
   badges: {
     title: "Tus insignias",
@@ -690,6 +694,10 @@ const en: Dict = {
     boostGiftCta: "Go to Trades",
     boostInviteTitle: "Invite your dev friends",
     boostInviteBody: "Send them the link in your team chat or dev group.",
+    referral: {
+      invited: (n: number) => (n === 1 ? "You have invited 1 dev" : `You have invited ${n} devs`),
+      reward: "When someone joins with your link, their card goes straight to your album.",
+    },
   },
   badges: {
     title: "Your badges",

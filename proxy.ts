@@ -29,7 +29,13 @@ export async function proxy(request: NextRequest) {
   });
 
   // Refresca la sesión si ha caducado (getClaims verifica el token sin ir siempre al servidor).
-  await supabase.auth.getClaims();
+  const { data: claims } = await supabase.auth.getClaims();
+
+  // Invitación: si alguien sin sesión llega con ?ref=<login>, lo recordamos 30 días.
+  const ref = searchParams.get("ref");
+  if (!claims?.claims && ref && /^[a-z0-9](?:[a-z0-9-]{0,38})$/i.test(ref)) {
+    response.cookies.set("ref", ref.toLowerCase(), { maxAge: 60 * 60 * 24 * 30, path: "/", sameSite: "lax" });
+  }
   return response;
 }
 

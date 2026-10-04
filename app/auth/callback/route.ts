@@ -54,7 +54,22 @@ export async function GET(request: NextRequest) {
       if (insertError || !created) throw insertError ?? new Error("No se creó el cromo");
       // Tu propio cromo es el primero de tu álbum.
       await admin.from("collection").insert({ user_id: userId, card_id: created.id, quantity: 1 });
-      return NextResponse.redirect(`${origin}/mi-cromo?bienvenida=1`);
+
+      // Invitación con recompensa: su cromo va al álbum de quien le invitó. Si falla, el login sigue.
+      const ref = request.cookies.get("ref")?.value;
+      if (ref) {
+        try {
+          await admin.rpc("reward_referral", {
+            p_referrer_login: ref,
+            p_new_user: userId,
+          });
+        } catch (e) {
+          console.error("callback: invitación no registrada", e instanceof Error ? e.message : e);
+        }
+      }
+      const res = NextResponse.redirect(`${origin}/mi-cromo?bienvenida=1`);
+      res.cookies.delete("ref");
+      return res;
     }
   } catch (e) {
     console.error("callback: no se pudo crear o actualizar el cromo", e instanceof Error ? e.message : e);
