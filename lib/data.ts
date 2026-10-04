@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { CARD_COLUMNS, type Card } from "@/lib/cards";
 import { DEMO_CARDS } from "@/lib/demo";
@@ -37,3 +38,26 @@ export async function totalCards(): Promise<number> {
   const { count } = await supabase.from("cards").select("id", { count: "exact", head: true });
   return count ?? 0;
 }
+
+export type HomeStats = { devs: number; tradesDone: number; top: Card[] };
+
+/** Actividad real para la portada. null si no hay Supabase o la lectura falla. */
+export const homeStats = cache(async (): Promise<HomeStats | null> => {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return null;
+    const [devs, trades, top] = await Promise.all([
+      supabase.from("cards").select("id", { count: "exact", head: true }),
+      supabase.from("trades").select("id", { count: "exact", head: true }).eq("status", "hecho"),
+      supabase.from("cards").select(CARD_COLUMNS).gt("owners", 0).order("owners", { ascending: false }).limit(6),
+    ]);
+    if (devs.error) return null;
+    return {
+      devs: devs.count ?? 0,
+      tradesDone: trades.error ? 0 : (trades.count ?? 0),
+      top: top.error ? [] : ((top.data ?? []) as unknown as Card[]),
+    };
+  } catch {
+    return null;
+  }
+});

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { RARITIES, cardNumber, formatCount, langStyle, type Card } from "@/lib/cards";
+import { RARITIES, cardNumber, formatCount, isCreator, langStyle, type Card } from "@/lib/cards";
 
 export const OG_SIZE = { width: 1200, height: 630 };
 
@@ -103,6 +103,11 @@ export function cardOgImage(card: Card | null) {
                 </div>
               )}
             </div>
+            {card && isCreator(card.login) && (
+              <div style={{ display: "flex", alignSelf: "flex-start", marginTop: -50, marginLeft: 8, padding: "4px 12px", border: "3px solid #ffd86e", borderRadius: 8, background: "#111111", color: "#ffd86e", fontSize: 15, fontWeight: 700, transform: "rotate(-3deg)", ...mono }}>
+                CREADOR · CREATOR
+              </div>
+            )}
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: 34, fontWeight: 700, letterSpacing: -1 }}>{name.length > 16 ? name.slice(0, 15) + "…" : name}</span>
               <span style={{ fontSize: 17, color: look.soft, ...mono }}>@{card?.login ?? "tu-usuario"}</span>

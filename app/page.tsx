@@ -2,10 +2,11 @@ import { SignInLink } from "@/components/SignInLink";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Cromo } from "@/components/Cromo";
+import { MiniCard } from "@/components/MiniCard";
 import { HeroFan } from "@/components/HeroFan";
-import { featuredCards } from "@/lib/data";
+import { featuredCards, homeStats } from "@/lib/data";
 import { DEMO_CARDS } from "@/lib/demo";
-import { RARITIES, RARITY_ORDER } from "@/lib/cards";
+import { RARITIES, RARITY_ORDER, formatCount } from "@/lib/cards";
 import { getUser } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { errorText } from "@/lib/i18n/dict";
@@ -15,7 +16,9 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const [{ user }, hero, { t }] = await Promise.all([getUser(), featuredCards(3), getT()]);
+  const [{ user }, hero, { t }, stats] = await Promise.all([getUser(), featuredCards(3), getT(), homeStats()]);
+  const showLive = !!stats && stats.devs >= 3;
+  const showTop = !!stats && stats.top.length >= 3;
   const message = errorText(t, error);
   const byRarity = RARITY_ORDER.map((r) => DEMO_CARDS.find((c) => c.rarity === r)!);
 
@@ -65,6 +68,47 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
           <HeroFan cards={hero} />
         </div>
       </section>
+
+      {stats && showLive && (
+        <section aria-label={t.home.liveKicker} className="border-b-[3px] border-ink bg-paper">
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+              <span className="inline-flex items-center gap-2 font-mono text-sm font-bold uppercase">
+                <span className="h-3 w-3 rounded-full border-2 border-ink bg-sun" aria-hidden="true" />
+                {t.home.liveKicker}
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="display text-5xl leading-none">{formatCount(stats.devs)}</span>
+                <span className="font-mono text-sm font-bold uppercase">{t.home.liveDevs(stats.devs)}</span>
+              </div>
+              {stats.tradesDone > 0 && (
+                <div className="flex items-baseline gap-2">
+                  <span className="display text-5xl leading-none">{formatCount(stats.tradesDone)}</span>
+                  <span className="font-mono text-sm font-bold uppercase">{t.home.liveTrades(stats.tradesDone)}</span>
+                </div>
+              )}
+            </div>
+            {showTop && (
+              <div className="mt-8">
+                <h2 className="display text-3xl">{t.home.liveTop}</h2>
+                <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {stats.top.map((c) => (
+                    <li key={c.id}>
+                      <Link
+                        href={`/c/${c.login}`}
+                        className="panel flex min-h-14 items-center justify-between gap-3 p-3 !shadow-[4px_4px_0_var(--color-ink)]"
+                      >
+                        <MiniCard card={c} />
+                        <span className="shrink-0 text-right font-mono text-xs font-bold">{t.home.liveOwners(c.owners)}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="bg-ink text-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-10 px-4 py-16">

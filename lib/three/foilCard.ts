@@ -7,7 +7,7 @@
  */
 
 import * as THREE from "three";
-import { RARITIES, cardNumber, formatCount, langStyle, yearsOnGithub, type Card, type Rarity } from "@/lib/cards";
+import { RARITIES, cardNumber, formatCount, isCreator, langStyle, yearsOnGithub, type Card, type Rarity } from "@/lib/cards";
 import type { Dict } from "@/lib/i18n/dict";
 
 export const CARD_W = 2.6;
@@ -247,6 +247,30 @@ export async function drawCardFace(card: Card, t: Dict): Promise<HTMLCanvasEleme
   g.fill();
   g.fillStyle = r === "legendaria" ? "#fff3c0" : r === "icono" ? "#ffffff" : L.accent;
   g.fillText(label, TW - 10 * s - lw / 2, 21.5 * s);
+
+  // Sello de creador (abajo a la izquierda del arte)
+  if (isCreator(card.login)) {
+    const txt = `★ ${t.card.creator}`;
+    g.font = `700 ${9 * s}px ${mono}`;
+    const sw = g.measureText(txt).width + 16 * s;
+    const sh2 = 19 * s;
+    const sx = 10 * s;
+    const sy = artH - 10 * s - sh2;
+    g.save();
+    g.translate(sx + sw / 2, sy + sh2 / 2);
+    g.rotate((-3 * Math.PI) / 180);
+    rr(g, -sw / 2, -sh2 / 2, sw, sh2, 4 * s);
+    g.fillStyle = "#111111";
+    g.fill();
+    g.lineWidth = 1.6 * s;
+    g.strokeStyle = "#ffd86e";
+    g.stroke();
+    g.fillStyle = "#ffd86e";
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillText(txt, 0, 0.5 * s);
+    g.restore();
+  }
 
   // Línea de metal
   g.fillStyle = metal(0, TW);

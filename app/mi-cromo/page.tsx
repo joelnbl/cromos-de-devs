@@ -123,8 +123,8 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
           {/* Cómo subir el número */}
           <section>
             <h2 className="display text-3xl">{t.myCard.boostTitle}</h2>
-            <ol className="mt-4 grid gap-4 sm:grid-cols-3 md:grid-cols-1 lg:grid-cols-3">
-              <li className="panel flex flex-col gap-2 p-4 shadow-[4px_4px_0_#111]">
+            <ol className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
+              <li className="panel flex flex-col gap-2 p-4 shadow-[4px_4px_0_#111] sm:col-span-2 md:col-span-1 lg:col-span-2">
                 <span className="display text-4xl">1</span>
                 <h3 className="font-extrabold">{t.myCard.boostShareTitle}</h3>
                 <p className="text-sm text-ink-soft">{t.myCard.boostShareBody}</p>

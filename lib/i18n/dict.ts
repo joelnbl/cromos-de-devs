@@ -53,6 +53,11 @@ const es = {
     raritiesBody:
       "La rareza sale de tus datos públicos de GitHub. Nadie la compra. Pasa el dedo o el ratón por encima: el metal brilla y cuanto más rara, más luz.",
     waiting: "Tu cromo te espera.",
+    liveKicker: "En vivo",
+    liveDevs: (n: number): string => (n === 1 ? "dev con cromo" : "devs con cromo"),
+    liveTrades: (n: number): string => (n === 1 ? "cambio hecho" : "cambios hechos"),
+    liveTop: "Los más coleccionados",
+    liveOwners: (n: number): string => (n === 1 ? "1 persona lo tiene" : `${n} personas lo tienen`),
     madeBy: "Hecho por",
     privacy: "Solo tienen cromo quienes se registran. Nadie aparece sin pedirlo.",
     examplesAria: "Cromos de ejemplo",
@@ -425,6 +430,11 @@ const en: Dict = {
     raritiesBody:
       "Rarity comes from your public GitHub data. Nobody can buy it. Move your finger or mouse over a card: the metal shines, and the rarer it is, the brighter it glows.",
     waiting: "Your card is waiting.",
+    liveKicker: "Live",
+    liveDevs: (n: number): string => (n === 1 ? "dev with a card" : "devs with a card"),
+    liveTrades: (n: number): string => (n === 1 ? "trade done" : "trades done"),
+    liveTop: "Most collected",
+    liveOwners: (n: number): string => (n === 1 ? "1 person has it" : `${n} people have it`),
     madeBy: "Made by",
     privacy: "Only people who sign up get a card. Nobody appears without asking.",
     examplesAria: "Example cards",
