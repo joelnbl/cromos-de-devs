@@ -28,8 +28,8 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  // Refresca la sesión si ha caducado.
-  await supabase.auth.getUser();
+  // Refresca la sesión si ha caducado (getClaims verifica el token sin ir siempre al servidor).
+  await supabase.auth.getClaims();
   return response;
 }
 

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "./env";
 
 export async function createClient() {
@@ -21,9 +22,15 @@ export async function createClient() {
   });
 }
 
-export async function getUser() {
+/**
+ * Quién ha iniciado sesión. `getClaims()` verifica el token (con las claves de firma
+ * del proyecto, sin ir al servidor de Auth cuando son asimétricas) y `cache` hace que
+ * la cabecera y la página compartan una sola comprobación por petición.
+ */
+export const getUser = cache(async () => {
   const supabase = await createClient();
   if (!supabase) return { supabase: null, user: null };
-  const { data } = await supabase.auth.getUser();
-  return { supabase, user: data.user };
-}
+  const { data, error } = await supabase.auth.getClaims();
+  const sub = !error ? data?.claims?.sub : undefined;
+  return { supabase, user: sub ? { id: sub } : null };
+});

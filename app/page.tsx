@@ -80,7 +80,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
         </div>
       </section>
 
-      <section id="como" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20">
+      <section id="como" className="cv-auto mx-auto max-w-6xl scroll-mt-24 px-4 py-20">
         <h2 className="display text-6xl">Cómo funciona</h2>
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {STEPS.map((s) => (
@@ -95,7 +95,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
         </div>
       </section>
 
-      <section className="border-y-[3px] border-ink bg-paper">
+      <section className="cv-auto border-y-[3px] border-ink bg-paper">
         <div className="mx-auto max-w-6xl px-4 py-20">
           <h2 className="display text-6xl">Cuatro rarezas</h2>
           <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">

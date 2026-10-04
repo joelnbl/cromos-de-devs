@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
+import { Archivo, JetBrains_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
 import { siteUrl } from "@/lib/site";
 import "./globals.css";
@@ -17,9 +17,6 @@ const mono = JetBrains_Mono({
   variable: "--font-mono-jb",
   display: "swap",
 });
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
@@ -39,7 +36,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${archivo.variable} ${mono.variable} ${geist.variable} ${geistMono.variable}`}>
+    <html lang="es" className={`${archivo.variable} ${mono.variable}`}>
       <body className="antialiased">
         <SiteHeader />
         {children}

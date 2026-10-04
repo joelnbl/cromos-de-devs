@@ -82,6 +82,12 @@ body {
   box-shadow: 6px 6px 0 var(--color-ink);
 }
 
+/* Secciones fuera de pantalla: el navegador no las dibuja hasta que hacen falta */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
+}
+
 .halftone {
   background-image: radial-gradient(rgba(17, 17, 17, 0.14) 1.2px, transparent 1.4px);
   background-size: 10px 10px;
