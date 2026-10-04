@@ -49,7 +49,7 @@ const es = {
       { title: "Un sobre al día", body: "Cada día abres un sobre gratis con 5 cromos de otros devs. Algunos brillan." },
       { title: "Cambia repetidos", body: "Creas un cambio, mandas el enlace y completáis el álbum entre amigos." },
     ],
-    raritiesTitle: "Cuatro rarezas",
+    raritiesTitle: "Cinco rarezas",
     raritiesBody:
       "La rareza sale de tus datos públicos de GitHub. Nadie la compra. Pasa el dedo o el ratón por encima: el metal brilla y cuanto más rara, más luz.",
     waiting: "Tu cromo te espera.",
@@ -63,6 +63,7 @@ const es = {
     rara: { label: "Rara", finish: "Marco de plata, rayos fríos", rule: "50+ estrellas o 30+ seguidores." },
     epica: { label: "Épica", finish: "Marco de oro y destellos", rule: "500+ estrellas o 200+ seguidores." },
     legendaria: { label: "Legendaria", finish: "Oro macizo y arcoíris", rule: "5.000+ estrellas o 1.000+ seguidores." },
+    icono: { label: "Icono", finish: "Holograma vivo, aura y galaxia", rule: "5.000+ seguidores o 20.000+ estrellas. Leyendas del código." },
   } as Record<Rarity, { label: string; finish: string; rule: string }>,
   card: {
     stars: "ESTRELLAS",
@@ -267,7 +268,7 @@ const en: Dict = {
       { title: "One pack a day", body: "Every day you open a free pack with 5 cards from other devs. Some of them shine." },
       { title: "Trade duplicates", body: "Create a trade, send the link and complete the album with friends." },
     ],
-    raritiesTitle: "Four rarities",
+    raritiesTitle: "Five rarities",
     raritiesBody:
       "Rarity comes from your public GitHub data. Nobody can buy it. Move your finger or mouse over a card: the metal shines, and the rarer it is, the brighter it glows.",
     waiting: "Your card is waiting.",
@@ -281,6 +282,7 @@ const en: Dict = {
     rara: { label: "Rare", finish: "Silver frame, cool rays", rule: "50+ stars or 30+ followers." },
     epica: { label: "Epic", finish: "Gold frame and sparkles", rule: "500+ stars or 200+ followers." },
     legendaria: { label: "Legendary", finish: "Solid gold and rainbow", rule: "5,000+ stars or 1,000+ followers." },
+    icono: { label: "Icon", finish: "Living hologram, aura and galaxy", rule: "5,000+ followers or 20,000+ stars. Coding legends." },
   },
   card: {
     stars: "STARS",

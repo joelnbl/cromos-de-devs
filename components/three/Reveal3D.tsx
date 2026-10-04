@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import type { Card } from "@/lib/cards";
+import { isTopRarity, type Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
 import { useT } from "@/lib/i18n/client";
 import { CARD_H, CARD_W, LOOK, createAmbience, createFoilCard, drawCardBack, drawCardFace, type FoilCard } from "@/lib/three/foilCard";
@@ -123,7 +123,7 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
         s.current = k;
         const card = pulls[k].card;
         s.phaseT = 0;
-        if (card.rarity === "legendaria" && !reduce) {
+        if (isTopRarity(card.rarity) && !reduce) {
           s.phase = "suspense";
           sfx.rumble();
         } else {
@@ -139,7 +139,7 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
         ambience.setRarity(r);
         rim.color.setHex(LOOK[r].rim);
         rim.intensity = LOOK[r].rimIntensity;
-        s.boost = r === "legendaria" ? 1 : r === "epica" ? 0.7 : r === "rara" ? 0.4 : 0.15;
+        s.boost = isTopRarity(r) ? 1 : r === "epica" ? 0.7 : r === "rara" ? 0.4 : 0.15;
         sfx.flip();
         setTimeout(() => {
           if (disposed) return;
@@ -209,11 +209,12 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
           sl.tPos.set(0, 0, 0.5);
           sl.tRot.set(0, Math.PI, 0);
           s.boost = Math.min(1, s.phaseT / 0.8);
-          rim.color.setHex(0xffd84d);
+          if (pulls[s.current].card.rarity === "icono") rim.color.setHSL((s.t * 0.6) % 1, 1, 0.65);
+          else rim.color.setHex(0xffd84d);
           rim.intensity = s.boost * 30;
           sl.pos.x += (Math.random() - 0.5) * 0.06 * s.boost;
           sl.rot.z += (Math.random() - 0.5) * 0.05 * s.boost;
-          if (s.phaseT > 0.9) {
+          if (s.phaseT > (pulls[s.current].card.rarity === "icono" ? 1.6 : 0.9)) {
             s.phase = "front";
             s.phaseT = 0;
           }

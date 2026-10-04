@@ -7,6 +7,15 @@ import type { Card } from "./cards";
  */
 export const DEMO_CARDS: Card[] = [
   {
+    id: 7, login: "scastillo", name: "Sofía Castillo", avatar_url: "/demo/scastillo.svg", bio: null, country: "MX",
+    top_language: "TypeScript", stars: 48200, followers: 9100, public_repos: 120, commits: 8400,
+    top_repos: [
+      { name: "nebula-ui", description: "Sistema de diseño", stars: 31000, language: "TypeScript" },
+      { name: "cli-kit", description: null, stars: 9200, language: "TypeScript" },
+    ],
+    github_created_at: "2009-05-01T00:00:00Z", rarity: "icono", owners: 0,
+  },
+  {
     id: 1, login: "anaruiz", name: "Ana Ruiz", avatar_url: "/demo/anaruiz.svg", bio: null, country: "ES",
     top_language: "TypeScript", stars: 12400, followers: 2300, public_repos: 64, commits: 3100,
     top_repos: [
@@ -70,7 +79,7 @@ export function demoPack(): { card: Card; isNew: boolean }[] {
   const out: { card: Card; isNew: boolean }[] = [];
   for (let i = 0; i < 5; i++) {
     const roll = Math.random();
-    const target = roll < 0.12 ? "legendaria" : roll < 0.3 ? "epica" : roll < 0.6 ? "rara" : "comun";
+    const target = roll < 0.06 ? "icono" : roll < 0.16 ? "legendaria" : roll < 0.32 ? "epica" : roll < 0.6 ? "rara" : "comun";
     const options = pool.filter((c) => c.rarity === target);
     const list = options.length ? options : pool;
     const card = list[Math.floor(Math.random() * list.length)];

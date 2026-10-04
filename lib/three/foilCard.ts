@@ -38,6 +38,7 @@ export const LOOK: Record<Rarity, Look> = {
   comun: { metal: 0xb8804e, roughness: 0.32, body: ["#1c1814", "#110f0c"], rays: "rgba(192,138,90,0.22)", ink: "#f3e9dd", soft: "#b9a894", accent: "#d9a673", irid: 0, rim: 0xc08a5a, rimIntensity: 6, plate: ["#6b4a2b", "#e3b486", "#7a5230"], sparks: 0.25, sparkColor: 0xffd84d, raysTint: 0xffffff, raysOpacity: 0.35 },
   rara: { metal: 0xe9eef3, roughness: 0.22, body: ["#151a20", "#0d1015"], rays: "rgba(120,190,255,0.26)", ink: "#eef4fa", soft: "#9fb0c2", accent: "#9fd3ff", irid: 0.25, rim: 0x78beff, rimIntensity: 26, plate: ["#7d868f", "#ffffff", "#8e98a2"], sparks: 0.45, sparkColor: 0xbfe3ff, raysTint: 0xa8d4ff, raysOpacity: 0.7 },
   epica: { metal: 0xf2c94c, roughness: 0.2, body: ["#1d1426", "#110c17"], rays: "rgba(180,120,255,0.34)", ink: "#fff6de", soft: "#c9b8d9", accent: "#ffd84d", irid: 0.7, rim: 0xa064ff, rimIntensity: 26, plate: ["#8a6a12", "#fff3c0", "#b8860b"], sparks: 0.85, sparkColor: 0xffd84d, raysTint: 0xd0a8ff, raysOpacity: 0.7 },
+  icono: { metal: 0xffffff, roughness: 0.12, body: ["#120a2a", "#07040f"], rays: "rgba(255,255,255,0.4)", ink: "#ffffff", soft: "#cbbcff", accent: "#ffe48a", irid: 1, rim: 0xb18cff, rimIntensity: 34, plate: ["#ff6ec7", "#ffffff", "#6ec8ff"], sparks: 1, sparkColor: 0xffffff, raysTint: 0xffffff, raysOpacity: 1 },
   legendaria: { metal: 0xffd45c, roughness: 0.16, body: ["#ffe9a3", "#c99a1c"], rays: "rgba(255,255,255,0.5)", ink: "#2a1c00", soft: "#5c4610", accent: "#2a1c00", irid: 1, rim: 0xffffff, rimIntensity: 26, plate: ["#8a6a12", "#ffffff", "#9c7414"], sparks: 0.9, sparkColor: 0xffd84d, raysTint: 0xffffff, raysOpacity: 1 },
 };
 
@@ -108,6 +109,28 @@ export async function drawCardFace(card: Card, t: Dict): Promise<HTMLCanvasEleme
   bg.addColorStop(1, L.body[1]);
   g.fillStyle = bg;
   g.fillRect(0, 0, TW, TH);
+  if (r === "icono") {
+    // Galaxia: nebulosas de color y estrellas
+    for (const [x, y, rad, col] of [
+      [0.2, 0.15, 0.55, "rgba(177,140,255,0.45)"],
+      [0.85, 0.3, 0.45, "rgba(110,200,255,0.35)"],
+      [0.5, 0.95, 0.6, "rgba(255,110,199,0.35)"],
+    ] as const) {
+      const ng = g.createRadialGradient(x * TW, y * TH, 0, x * TW, y * TH, rad * TW);
+      ng.addColorStop(0, col);
+      ng.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = ng;
+      g.fillRect(0, 0, TW, TH);
+    }
+    g.fillStyle = "rgba(255,255,255,0.85)";
+    for (let i = 0; i < 160; i++) {
+      const x = (((Math.sin(i * 91.7) * 43758.5453) % 1) + 1) % 1;
+      const y = (((Math.sin(i * 17.3) * 24634.6345) % 1) + 1) % 1;
+      g.beginPath();
+      g.arc(x * TW, y * TH, ((i % 4) + 1) * 0.9, 0, Math.PI * 2);
+      g.fill();
+    }
+  }
 
   // Rayos detrás de la foto
   const artH = 175 * s;
@@ -124,6 +147,12 @@ export async function drawCardFace(card: Card, t: Dict): Promise<HTMLCanvasEleme
   for (let a = 0; a < 360; a += 15) {
     const a0 = (a * Math.PI) / 180;
     const a1 = ((a + 7) * Math.PI) / 180;
+    if (r === "icono") {
+      const hg = g.createRadialGradient(cx, cy, 0, cx, cy, TW * 0.8);
+      hg.addColorStop(0, `hsla(${(a * 2) % 360},100%,75%,0.55)`);
+      hg.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = hg;
+    }
     g.beginPath();
     g.moveTo(cx, cy);
     g.lineTo(cx + Math.cos(a0) * TW, cy + Math.sin(a0) * TW);
@@ -131,8 +160,8 @@ export async function drawCardFace(card: Card, t: Dict): Promise<HTMLCanvasEleme
     g.closePath();
     g.fill();
   }
-  if (r === "epica" || r === "legendaria") {
-    g.fillStyle = r === "legendaria" ? "rgba(255,255,255,0.9)" : "rgba(255,240,190,0.85)";
+  if (r === "epica" || r === "legendaria" || r === "icono") {
+    g.fillStyle = r === "epica" ? "rgba(255,240,190,0.85)" : "rgba(255,255,255,0.9)";
     for (let i = 0; i < 70; i++) {
       const x = (((Math.sin(i * 12.9898) * 43758.5453) % 1) + 1) % 1;
       const y = (((Math.sin(i * 78.233) * 12345.678) % 1) + 1) % 1;
@@ -147,6 +176,18 @@ export async function drawCardFace(card: Card, t: Dict): Promise<HTMLCanvasEleme
   g.fillStyle = sh;
   g.fillRect(0, artH - 54 * s, TW, 54 * s);
   g.restore();
+
+  // Anillo de luz (Icono)
+  if (r === "icono") {
+    const ringR = 66 * s;
+    for (let a = 0; a < 360; a += 2) {
+      g.beginPath();
+      g.strokeStyle = `hsl(${a},100%,72%)`;
+      g.lineWidth = 7 * s;
+      g.arc(cx, 10 * s + artH / 2, ringR, (a * Math.PI) / 180, ((a + 2.5) * Math.PI) / 180);
+      g.stroke();
+    }
+  }
 
   // Foto
   const av = 103 * s;
@@ -204,7 +245,7 @@ export async function drawCardFace(card: Card, t: Dict): Promise<HTMLCanvasEleme
   rr(g, TW - 10 * s - lw, 10 * s, lw, 22 * s, 11 * s);
   g.fillStyle = "rgba(0,0,0,0.45)";
   g.fill();
-  g.fillStyle = r === "legendaria" ? "#fff3c0" : L.accent;
+  g.fillStyle = r === "legendaria" ? "#fff3c0" : r === "icono" ? "#ffffff" : L.accent;
   g.fillText(label, TW - 10 * s - lw / 2, 21.5 * s);
 
   // Línea de metal
@@ -216,7 +257,16 @@ export async function drawCardFace(card: Card, t: Dict): Promise<HTMLCanvasEleme
   let y = artH + 12 * s;
   g.textAlign = "left";
   g.textBaseline = "top";
-  g.fillStyle = L.ink;
+  if (r === "icono") {
+    const ng = g.createLinearGradient(px, 0, TW - px, 0);
+    ng.addColorStop(0, "#fff3c0");
+    ng.addColorStop(0.35, "#ffd86e");
+    ng.addColorStop(0.55, "#ffffff");
+    ng.addColorStop(1, "#ffd86e");
+    g.fillStyle = ng;
+  } else {
+    g.fillStyle = L.ink;
+  }
   g.font = `900 ${28 * s}px ${display}`;
   g.save();
   g.scale(0.72, 1);
@@ -387,7 +437,17 @@ export function createFoilCard(
     curveSegments: 12,
   });
   frameGeo.translate(0, 0, -DEPTH / 2);
-  const frameMat = new THREE.MeshPhysicalMaterial({ color: L.metal, metalness: 1, roughness: L.roughness, clearcoat: 0.6, clearcoatRoughness: 0.15 });
+  const frameMat = new THREE.MeshPhysicalMaterial({
+    color: L.metal,
+    metalness: 1,
+    roughness: L.roughness,
+    clearcoat: 0.6,
+    clearcoatRoughness: 0.15,
+    // Icono: marco de cromo arcoíris
+    iridescence: rarity === "icono" ? 1 : 0,
+    iridescenceIOR: 2.1,
+    iridescenceThicknessRange: [250, 900],
+  });
   const frame = new THREE.Mesh(frameGeo, frameMat);
 
   const fw = CARD_W - BORDER * 2;
@@ -484,7 +544,9 @@ export function createAmbience(rarity: Rarity) {
   group.add(rays, sparks);
 
   let baseOpacity = 0.5;
+  let rainbow = false;
   const setRarity = (r: Rarity) => {
+    rainbow = r === "icono";
     const L = LOOK[r];
     raysMat.color.setHex(L.raysTint);
     baseOpacity = L.raysOpacity;
@@ -505,7 +567,11 @@ export function createAmbience(rarity: Rarity) {
     },
     update(dt: number, reduce: boolean) {
       t += dt;
-      if (!reduce) rays.rotation.z += dt * 0.08;
+      if (!reduce) rays.rotation.z += dt * (rainbow ? 0.16 : 0.08);
+      if (rainbow) {
+        raysMat.color.setHSL((t * 0.08) % 1, 0.9, 0.7);
+        sparkMat.color.setHSL((t * 0.08 + 0.5) % 1, 0.8, 0.8);
+      }
       for (let i = 0; i < N; i++) pos[i * 3 + 1] += Math.sin(t + seed[i]) * 0.0015;
       sparkGeo.attributes.position.needsUpdate = true;
     },

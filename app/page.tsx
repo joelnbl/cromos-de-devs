@@ -97,10 +97,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
           <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">
             {t.home.raritiesBody}
           </p>
-          <div className="mt-12 grid grid-cols-2 justify-items-center gap-x-4 gap-y-10 lg:grid-cols-4">
+          <div className="mt-12 grid grid-cols-2 justify-items-center gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
             {byRarity.map((card) => (
               <div key={card.rarity} className="flex flex-col items-center gap-4">
-                <Cromo card={card} width={220} className="max-sm:[--w:160px]!" />
+                <Cromo card={card} width={200} className="max-sm:[--w:160px]!" />
                 <div className="text-center">
                   <div className="display text-2xl">
                     {RARITIES[card.rarity].symbol} {t.rarity[card.rarity].label}

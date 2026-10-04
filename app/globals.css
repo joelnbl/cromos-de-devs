@@ -428,6 +428,117 @@ body {
   transition: opacity 0.3s ease;
 }
 
+/* --- Icono: holograma vivo -------------------------------------------- */
+
+@property --spin {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+.cromo[data-rarity="icono"] {
+  --metal: conic-gradient(
+    from calc(var(--spin) + var(--lx) * 40deg),
+    #ff6ec7, #ffd86e, #7dffb0, #6ec8ff, #b18cff, #ff6ec7
+  );
+  --body:
+    radial-gradient(circle at 20% 15%, rgba(177, 140, 255, 0.45), transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(110, 200, 255, 0.35), transparent 40%),
+    radial-gradient(circle at 50% 95%, rgba(255, 110, 199, 0.35), transparent 50%),
+    linear-gradient(180deg, #120a2a, #07040f);
+  --rays: rgba(255, 255, 255, 0.4);
+  --glow: rgba(177, 140, 255, 0.8);
+  --ink: #ffffff;
+  --soft: #cbbcff;
+  --accent: #ffe48a;
+  --cell: rgba(255, 255, 255, 0.07);
+  --cell-line: rgba(255, 255, 255, 0.16);
+  --spark: radial-gradient(circle, #ffffff 0 0.07em, transparent 0.12em);
+  animation: cromo-spin 6s linear infinite;
+}
+@keyframes cromo-spin {
+  to { --spin: 360deg; }
+}
+
+/* Aura arcoíris alrededor de la carta */
+.cromo[data-rarity="icono"] .cromo-tilt::before {
+  content: "";
+  position: absolute;
+  inset: -0.9em;
+  border-radius: 2em;
+  background: conic-gradient(from var(--spin), #ff6ec7, #ffd86e, #7dffb0, #6ec8ff, #b18cff, #ff6ec7);
+  filter: blur(1.4em);
+  opacity: 0.95;
+  transform: translateZ(-1px);
+}
+.cromo[data-rarity="icono"][data-facedown="true"] .cromo-tilt::before { opacity: 0.25; }
+
+.cromo[data-rarity="icono"] .cromo-rays {
+  background: repeating-conic-gradient(
+    from var(--spin),
+    rgba(255, 110, 199, 0.45) 0deg 6deg,
+    transparent 6deg 12deg,
+    rgba(110, 200, 255, 0.45) 12deg 18deg,
+    transparent 18deg 24deg,
+    rgba(255, 216, 110, 0.45) 24deg 30deg,
+    transparent 30deg 36deg
+  );
+}
+.cromo[data-rarity="icono"] .cromo-sparks {
+  background-image:
+    radial-gradient(circle, #ffffff 0 0.07em, transparent 0.12em),
+    radial-gradient(circle, rgba(255, 228, 138, 0.9) 0 0.05em, transparent 0.1em);
+  background-size: 1.1em 1.1em, 1.9em 1.9em;
+  opacity: 0.9;
+}
+
+/* Anillo de luz detrás de la foto */
+.cromo-halo { display: none; }
+.cromo[data-rarity="icono"] .cromo-halo {
+  display: block;
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: calc(50% + 0.4em);
+  width: 12.4em;
+  height: 12.4em;
+  margin: -6.2em 0 0 -6.2em;
+  border-radius: 50%;
+  background: conic-gradient(from calc(var(--spin) * -2), #ff6ec7, #ffd86e, #7dffb0, #6ec8ff, #b18cff, #ff6ec7);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 76%, #000 78%, #000 90%, transparent 92%);
+  mask: radial-gradient(circle closest-side, transparent 76%, #000 78%, #000 90%, transparent 92%);
+  filter: drop-shadow(0 0 0.5em rgba(255, 255, 255, 0.9));
+}
+
+.cromo[data-rarity="icono"] .cromo-name {
+  background: linear-gradient(
+    100deg,
+    #fff3c0 0%, #ffd86e 30%, #ffffff calc(var(--mx) + 5%), #ffd86e 70%, #fff3c0 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0.08em 0 rgba(0, 0, 0, 0.55));
+}
+.cromo[data-rarity="icono"] .cromo-rarity {
+  color: #ffffff;
+  background: linear-gradient(90deg, rgba(255, 110, 199, 0.55), rgba(110, 200, 255, 0.55));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 0 1em rgba(177, 140, 255, 0.7);
+}
+.cromo[data-rarity="icono"] .cromo-num { color: #1a0f2e; }
+.cromo[data-rarity="icono"] .cromo-repo {
+  background: linear-gradient(90deg, rgba(177, 140, 255, 0.28), rgba(110, 200, 255, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(203, 188, 255, 0.4);
+}
+.cromo[data-rarity="icono"] .cromo-holo {
+  background: conic-gradient(from var(--spin) at var(--mx) var(--my), rgba(255, 0, 150, 0.18), rgba(0, 200, 255, 0.18), rgba(255, 240, 0, 0.18), rgba(0, 255, 150, 0.18), rgba(255, 0, 150, 0.18));
+  mix-blend-mode: color-dodge;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cromo[data-rarity="icono"] { animation: none; }
+}
+
 /* --- Reverso ----------------------------------------------------------- */
 
 .cromo-back .cromo-body {

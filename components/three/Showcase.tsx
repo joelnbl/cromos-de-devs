@@ -179,6 +179,7 @@ export default function Showcase({ card }: { card: Card }) {
         foil.group.position.y = reduce ? 0 : Math.sin(s.t * 1.3) * 0.06;
         key.position.set(3 + Math.sin(s.ry) * 2, 4, 5);
         ambience.update(dt, reduce);
+        if (card.rarity === "icono") rim.color.setHSL((s.t * 0.08) % 1, 0.9, 0.65);
         renderer.render(scene, camera);
       };
       loop();

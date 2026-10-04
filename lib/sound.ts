@@ -181,6 +181,12 @@ export const sfx = {
     } else if (rarity === "epica") {
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(c, f, t + i * 0.07, 0.45, "triangle", 0.14));
       vibrate(40);
+    } else if (rarity === "icono") {
+      // Fanfarria: acorde mayor que sube y destellos
+      [261.63, 329.63, 392.0, 523.25, 659.25, 783.99].forEach((f) => tone(c, f, t, 2.6, "sine", 0.08));
+      [523.25, 659.25, 783.99, 1046.5, 1318.5, 1568, 2093, 2637].forEach((f, i) => tone(c, f, t + 0.1 + i * 0.07, 0.7, "triangle", 0.06));
+      [392.0, 493.88, 587.33].forEach((f) => tone(c, f * 2, t + 0.75, 1.6, "sine", 0.05));
+      vibrate([80, 40, 80, 40, 200]);
     } else {
       [261.63, 329.63, 392.0, 523.25, 659.25].forEach((f) => tone(c, f, t, 1.8, "sine", 0.09));
       [1046.5, 1318.5, 1568, 2093].forEach((f, i) => tone(c, f, t + 0.15 + i * 0.09, 0.6, "triangle", 0.06));

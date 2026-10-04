@@ -88,6 +88,7 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
             <div className="cromo-art">
               <div className="cromo-rays" />
               <div className="cromo-sparks" />
+              <span className="cromo-halo" />
               {card.avatar_url ? (
                 <img className="cromo-avatar" src={card.avatar_url} alt="" draggable={false} crossOrigin="anonymous" />
               ) : (
@@ -139,7 +140,7 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
               </div>
             </div>
             <div className="cromo-sweep" />
-            {card.rarity === "legendaria" && <div className="cromo-holo" />}
+            {(card.rarity === "legendaria" || card.rarity === "icono") && <div className="cromo-holo" />}
             <div className="cromo-glare" />
           </div>
         </div>

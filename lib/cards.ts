@@ -1,4 +1,4 @@
-export type Rarity = "comun" | "rara" | "epica" | "legendaria";
+export type Rarity = "comun" | "rara" | "epica" | "legendaria" | "icono";
 
 export type TopRepo = {
   name: string;
@@ -36,11 +36,16 @@ export const RARITIES: Record<
   rara: { label: "Rara", symbol: "◆", finish: "Marco de plata, rayos fríos", rule: "50+ estrellas o 30+ seguidores." },
   epica: { label: "Épica", symbol: "★", finish: "Marco de oro y destellos", rule: "500+ estrellas o 200+ seguidores." },
   legendaria: { label: "Legendaria", symbol: "✦", finish: "Oro macizo y arcoíris", rule: "5.000+ estrellas o 1.000+ seguidores." },
+  icono: { label: "Icono", symbol: "♛", finish: "Holograma vivo y aura", rule: "5.000+ seguidores o 20.000+ estrellas." },
 };
 
-export const RARITY_ORDER: Rarity[] = ["comun", "rara", "epica", "legendaria"];
+export const RARITY_ORDER: Rarity[] = ["comun", "rara", "epica", "legendaria", "icono"];
+
+/** Rarezas con suspense, relieve y destellos. */
+export const isTopRarity = (r: Rarity) => r === "legendaria" || r === "icono";
 
 export function computeRarity(stars: number, followers: number): Rarity {
+  if (stars >= 20000 || followers >= 5000) return "icono";
   if (stars >= 5000 || followers >= 1000) return "legendaria";
   if (stars >= 500 || followers >= 200) return "epica";
   if (stars >= 50 || followers >= 30) return "rara";

@@ -9,6 +9,7 @@ const LOOK: Record<Card["rarity"], { ring: string; bg: string; ink: string; soft
   comun: { ring: "linear-gradient(135deg, #6B4A2B, #E3B486 45%, #7A5230 75%, #B9824F)", bg: "linear-gradient(180deg, #1C1814, #110F0C)", ink: "#F3E9DD", soft: "#B9A894", line: "rgba(255,255,255,0.12)", glow: "rgba(0,0,0,0)" },
   rara: { ring: "linear-gradient(135deg, #7D868F, #FFFFFF 45%, #8E98A2 75%, #DDE3E8)", bg: "linear-gradient(180deg, #151A20, #0D1015)", ink: "#EEF4FA", soft: "#9FB0C2", line: "rgba(255,255,255,0.12)", glow: "rgba(120,190,255,0.35)" },
   epica: { ring: "linear-gradient(135deg, #8A6A12, #FFF3C0 45%, #B8860B 75%, #F2D36B)", bg: "linear-gradient(180deg, #1D1426, #110C17)", ink: "#FFF6DE", soft: "#C9B8D9", line: "rgba(255,255,255,0.12)", glow: "rgba(160,100,255,0.5)" },
+  icono: { ring: "linear-gradient(135deg, #FF6EC7, #FFD86E 25%, #7DFFB0 50%, #6EC8FF 75%, #B18CFF)", bg: "linear-gradient(180deg, #2A1650, #07040F)", ink: "#FFFFFF", soft: "#CBBCFF", line: "rgba(255,255,255,0.18)", glow: "rgba(177,140,255,0.8)" },
   legendaria: { ring: "linear-gradient(135deg, #8A6A12, #FFFFFF 40%, #E8BE45 65%, #9C7414)", bg: "linear-gradient(170deg, #FFE9A3, #E8BE45 45%, #FFF3C0 60%, #C99A1C)", ink: "#2A1C00", soft: "#5C4610", line: "rgba(0,0,0,0.15)", glow: "rgba(255,216,77,0.7)" },
 };
 

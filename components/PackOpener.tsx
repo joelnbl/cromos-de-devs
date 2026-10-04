@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Cromo } from "./Cromo";
 import { Countdown } from "./Countdown";
-import { RARITIES, type Card } from "@/lib/cards";
+import { RARITIES, isTopRarity, type Card } from "@/lib/cards";
 import { demoPack } from "@/lib/demo";
 import type { PackResult } from "@/app/actions";
 import { sfx } from "@/lib/sound";
@@ -65,7 +65,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
   const getLegendary = useCallback(() => {
     const r = result.current;
     if (!r) return null;
-    return r.ok && r.cards.some((c) => c.card.rarity === "legendaria");
+    return r.ok && r.cards.some((c) => isTopRarity(c.card.rarity));
   }, []);
 
   /** Se llama al terminar la animación del sobre (3D o CSS). */
@@ -439,7 +439,7 @@ function Pack({ tearing, onOpen, reduce }: { tearing: boolean; onOpen: () => voi
 function RevealCard({ pull, onNext, reduce }: { pull: Pull; onNext: () => void; reduce: boolean }) {
   const t = useT();
   const [flipped, setFlipped] = useState(false);
-  const special = pull.card.rarity === "epica" || pull.card.rarity === "legendaria";
+  const special = pull.card.rarity === "epica" || isTopRarity(pull.card.rarity);
 
   useEffect(() => {
     const timers = [
@@ -461,7 +461,7 @@ function RevealCard({ pull, onNext, reduce }: { pull: Pull; onNext: () => void; 
       exit={{ x: -420, y: -40, rotate: -24, opacity: 0, transition: { duration: 0.4, ease: "easeIn" } }}
       transition={{ type: "spring", stiffness: 260, damping: 22 }}
     >
-      {special && flipped && <Burst legendary={pull.card.rarity === "legendaria"} reduce={reduce} />}
+      {special && flipped && <Burst legendary={isTopRarity(pull.card.rarity)} reduce={reduce} />}
       <button
         type="button"
         onClick={onNext}
