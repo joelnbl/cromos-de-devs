@@ -44,7 +44,14 @@ export const RARITY_ORDER: Rarity[] = ["comun", "rara", "epica", "legendaria", "
 /** Rarezas con suspense, relieve y destellos. */
 export const isTopRarity = (r: Rarity) => r === "legendaria" || r === "icono";
 
-export function computeRarity(stars: number, followers: number): Rarity {
+/**
+ * Referentes de la comunidad que reciben la Icono sí o sí. Su cromo NO existe
+ * hasta que ellos mismos entran con GitHub: esta lista solo decide la rareza.
+ */
+export const ICONO_LOGINS = new Set(["midudev", "mouredev", "freddier", "rauchg"]);
+
+export function computeRarity(stars: number, followers: number, login = ""): Rarity {
+  if (ICONO_LOGINS.has(login.toLowerCase())) return "icono";
   if (stars >= 20000 || followers >= 5000) return "icono";
   if (stars >= 5000 || followers >= 1000) return "legendaria";
   if (stars >= 500 || followers >= 200) return "epica";

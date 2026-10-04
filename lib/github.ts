@@ -80,6 +80,6 @@ export async function fetchCardStats(token: string) {
     commits,
     top_repos: topRepos,
     github_created_at: user.created_at,
-    rarity: computeRarity(stars, user.followers),
+    rarity: computeRarity(stars, user.followers, user.login),
   };
 }

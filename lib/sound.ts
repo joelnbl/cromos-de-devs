@@ -93,7 +93,42 @@ export function vibrate(pattern: number | number[]) {
   }
 }
 
+/** Golpecito seco de cartón (una carta cayendo sobre otra). */
+function click(c: AudioContext, start: number, vol: number) {
+  noiseBurst(c, start, 0.025, 3200 + Math.random() * 1600, 1800, "bandpass", vol);
+}
+
+let lastBrush = 0;
+
 export const sfx = {
+  /** Barajado en cascada: las cartas caen una tras otra y se cuadran. */
+  shuffle() {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime;
+    // Doblar el mazo
+    noiseBurst(c, t, 0.12, 900, 2400, "bandpass", 0.06);
+    // Cascada: unas 26 cartas que se aceleran y luego frenan
+    let at = t + 0.1;
+    for (let i = 0; i < 26; i++) {
+      const p = i / 25;
+      at += 0.028 - Math.sin(p * Math.PI) * 0.016 + Math.random() * 0.006;
+      click(c, at, 0.05 + Math.sin(p * Math.PI) * 0.07);
+    }
+    // Cuadrar el mazo
+    noiseBurst(c, at + 0.06, 0.18, 1800, 500, "lowpass", 0.14);
+    click(c, at + 0.2, 0.16);
+    vibrate([8, 30, 8, 30, 8]);
+  },
+  /** Roce suave de cartón al pasar por encima de una carta. */
+  brush() {
+    const now = performance.now();
+    if (now - lastBrush < 140) return;
+    lastBrush = now;
+    const c = audio();
+    if (!c) return;
+    noiseBurst(c, c.currentTime, 0.14, 1400, 3400, "bandpass", 0.045);
+  },
   /** Papel de aluminio arrugándose al arrastrar. */
   crinkle() {
     const c = audio();

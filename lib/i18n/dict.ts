@@ -57,6 +57,7 @@ const es = {
     privacy: "Solo tienen cromo quienes se registran. Nadie aparece sin pedirlo.",
     examplesAria: "Cromos de ejemplo",
     examplesCaption: "Cromos de ejemplo · personas inventadas",
+    shuffle: "Barajar las cartas",
   },
   rarity: {
     comun: { label: "Común", finish: "Marco de bronce", rule: "Cualquiera que se registre." },
@@ -276,6 +277,7 @@ const en: Dict = {
     privacy: "Only people who sign up get a card. Nobody appears without asking.",
     examplesAria: "Example cards",
     examplesCaption: "Example cards · made-up people",
+    shuffle: "Shuffle the cards",
   },
   rarity: {
     comun: { label: "Common", finish: "Bronze frame", rule: "Anyone who signs up." },

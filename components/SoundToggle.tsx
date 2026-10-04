@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { isSoundOn, onSoundChange, setSoundOn, sfx } from "@/lib/sound";
 import { useT } from "@/lib/i18n/client";
 
-export function SoundToggle({ className = "" }: { className?: string }) {
+export function SoundToggle({ className = "", tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
   const [on, setOn] = useState(true);
   const t = useT();
 
@@ -24,9 +24,10 @@ export function SoundToggle({ className = "" }: { className?: string }) {
         setSoundOn(!on);
         if (!on) sfx.pop();
       }}
+      data-sound-toggle
       aria-pressed={on}
       aria-label={on ? t.common.soundOff : t.common.soundOn}
-      className={`grid h-11 w-11 place-items-center rounded-full border-2 border-white/40 text-white hover:bg-white/10 ${className}`}
+      className={`grid h-11 w-11 place-items-center rounded-full border-2 ${tone === "dark" ? "border-ink bg-white text-ink shadow-[3px_3px_0_#111] hover:bg-sun-deep" : "border-white/40 text-white hover:bg-white/10"} ${className}`}
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M11 5 6 9H2v6h4l5 4V5z" />
