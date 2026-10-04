@@ -44,6 +44,9 @@ export const RARITY_ORDER: Rarity[] = ["comun", "rara", "epica", "legendaria", "
 /** Rarezas con suspense, relieve y destellos. */
 export const isTopRarity = (r: Rarity) => r === "legendaria" || r === "icono";
 
+/** Probabilidad (%) de cada rareza por cromo del sobre. Igual que open_daily_pack en la base de datos. */
+export const PACK_ODDS: Record<Rarity, number> = { comun: 67.5, rara: 22, epica: 8, legendaria: 2, icono: 0.5 };
+
 /**
  * Referentes de la comunidad que reciben la Icono sí o sí. Su cromo NO existe
  * hasta que ellos mismos entran con GitHub: esta lista solo decide la rareza.

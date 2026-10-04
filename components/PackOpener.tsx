@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Cromo } from "./Cromo";
-import { Countdown } from "./Countdown";
+import { DoneToday, OddsPanel, PackSummary, StreakPanel, type PackInfo } from "./PackPanels";
 import { RARITIES, isTopRarity, type Card } from "@/lib/cards";
 import { demoPack } from "@/lib/demo";
 import type { PackResult } from "@/app/actions";
@@ -16,6 +16,8 @@ import { useT } from "@/lib/i18n/client";
 const PackScene = dynamic(() => import("./three/PackScene"), { ssr: false });
 const Reveal3D = dynamic(() => import("./three/Reveal3D"), { ssr: false });
 
+export type { PackInfo };
+
 type Pull = { card: Card; isNew: boolean };
 type Phase = "idle" | "tearing" | "fan" | "reveal" | "summary" | "empty" | "done-today";
 
@@ -24,9 +26,32 @@ type Props = {
   openedToday: boolean;
   nextAt: string;
   open?: () => Promise<PackResult>;
+  info: PackInfo;
 };
 
-export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
+/** Antes de abrir: racha a un lado, probabilidades al otro y el sobre en medio. */
+function IdleLayout({ info, children }: { info: PackInfo; children: React.ReactNode }) {
+  const t = useT();
+  return (
+    <div className="relative z-10 flex w-full max-w-6xl flex-col gap-6">
+      <div className="flex flex-col gap-2 pt-10 text-center lg:pt-0 lg:text-left">
+        <p className="font-mono text-xs font-extrabold uppercase tracking-wider text-sun md:text-sm">{t.pack.kicker(info.dateLabel)}</p>
+        <h2 className="display text-5xl text-white md:text-7xl">{t.pack.heading}</h2>
+      </div>
+      <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)_minmax(0,1fr)]">
+        <div className="order-2 lg:order-1">
+          <StreakPanel info={info} />
+        </div>
+        <div className="order-1 lg:order-2">{children}</div>
+        <div className="order-3">
+          <OddsPanel />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function PackOpener({ demo, openedToday, nextAt, open, info }: Props) {
   const t = useT();
   const [phase, setPhase] = useState<Phase>(openedToday ? "done-today" : "idle");
   const [pulls, setPulls] = useState<Pull[]>([]);
@@ -111,7 +136,6 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
     else setIndex((i) => i + 1);
   };
 
-  const newCount = pulls.filter((p) => p.isNew).length;
 
   return (
     <div className="relative flex min-h-[640px] flex-col items-center justify-center overflow-hidden px-4 py-10">
@@ -128,6 +152,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
       </div>
 
       {use3d && phase === "idle" && (
+        <IdleLayout info={info}>
         <div className="relative z-10 flex w-full flex-col items-center gap-4">
           <div className="relative h-[min(54vh,500px)] w-full max-w-md">
             <PackScene
@@ -145,7 +170,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
             />
             <SwipeHint progress={dragHint} />
           </div>
-          <p className="text-lg font-bold text-white" aria-live="polite">
+          <p className="text-center text-lg font-bold text-white" aria-live="polite">
             {t.pack.swipe}
           </p>
           <button
@@ -156,15 +181,18 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
             {t.pack.openNoSwipe}
           </button>
         </div>
+        </IdleLayout>
       )}
 
       {!use3d && (phase === "idle" || phase === "tearing") && (
-        <div className="relative z-10 flex flex-col items-center gap-8">
-          <Pack tearing={phase === "tearing"} onOpen={tear} reduce={Boolean(reduce)} />
-          <p className="text-lg font-bold text-white" aria-live="polite">
-            {phase === "tearing" ? t.pack.opening : t.pack.tapToOpen}
-          </p>
-        </div>
+        <IdleLayout info={info}>
+          <div className="relative z-10 flex flex-col items-center gap-8">
+            <Pack tearing={phase === "tearing"} onOpen={tear} reduce={Boolean(reduce)} />
+            <p className="text-lg font-bold text-white" aria-live="polite">
+              {phase === "tearing" ? t.pack.opening : t.pack.tapToOpen}
+            </p>
+          </div>
+        </IdleLayout>
       )}
 
       {phase === "fan" && <FanOut pulls={pulls} />}
@@ -239,83 +267,20 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
       )}
 
       {phase === "summary" && (
-        <motion.div
-          className="relative z-10 flex w-full max-w-5xl flex-col items-center gap-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h2 className="display text-center text-5xl text-white md:text-6xl">
-            {newCount === 0 ? t.pack.allRepeated : t.pack.nNew(newCount)}
-          </h2>
-          <div className="flex flex-wrap justify-center gap-4">
-            {pulls.map((p, i) => (
-              <motion.div
-                key={i}
-                className="flex flex-col items-center gap-2"
-                initial={{ opacity: 0, y: 40, rotate: (i - 2) * 4 }}
-                animate={{ opacity: 1, y: 0, rotate: 0 }}
-                transition={{ delay: i * 0.08, type: "spring", stiffness: 200, damping: 18 }}
-              >
-                <Cromo card={p.card} width={170} />
-                <Tag isNew={p.isNew} />
-              </motion.div>
-            ))}
-          </div>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/album" className="btn btn-sun">
-              {t.pack.seeAlbum}
-            </Link>
-            {newCount < pulls.length && (
-              <Link href="/cambios" className="btn btn-ghost border-white text-white">
-                {t.pack.tradeDupes}
-              </Link>
-            )}
-          </div>
-          {!demo && (
-            <p className="font-mono text-sm text-white/80">
-              {t.pack.nextPackIn} <Countdown to={nextAt} />
-            </p>
-          )}
-          {demo && (
-            <button
-              type="button"
-              className="font-bold text-sun underline underline-offset-4"
-              onClick={() => {
-                setPhase("idle");
-                setPulls([]);
-                setAttempt((a) => a + 1);
-              }}
-            >
-              {t.pack.demoAgain}
-            </button>
-          )}
-        </motion.div>
+        <PackSummary
+          pulls={pulls}
+          info={info}
+          demo={demo}
+          nextAt={nextAt}
+          onDemoAgain={() => {
+            setPhase("idle");
+            setPulls([]);
+            setAttempt((a) => a + 1);
+          }}
+        />
       )}
 
-      {phase === "done-today" && (
-        <div className="relative z-10 flex flex-col items-center gap-6 text-center text-white">
-          <div className="sobre opacity-40 grayscale" style={{ "--pw": "180px" } as React.CSSProperties}>
-            <div className="sobre-top" />
-            <div className="sobre-body" />
-          </div>
-          <h2 className="display text-5xl">{t.pack.opened}</h2>
-          <p className="max-w-sm text-lg">
-            {t.pack.openedBefore}{" "}
-            <span className="font-mono font-bold text-sun">
-              <Countdown to={nextAt} />
-            </span>
-            .
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/album" className="btn btn-sun">
-              {t.pack.seeAlbum}
-            </Link>
-            <Link href="/mi-cromo" className="btn btn-ghost border-white text-white">
-              {t.pack.shareMyCard}
-            </Link>
-          </div>
-        </div>
-      )}
+      {phase === "done-today" && <DoneToday info={info} nextAt={nextAt} />}
 
       {phase === "empty" && (
         <div className="relative z-10 flex max-w-md flex-col items-center gap-5 text-center text-white">
@@ -329,17 +294,6 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
         </div>
       )}
     </div>
-  );
-}
-
-function Tag({ isNew }: { isNew: boolean }) {
-  const t = useT();
-  return (
-    <span
-      className={`rounded-full px-3 py-1 font-mono text-xs font-bold ${isNew ? "bg-sun text-ink" : "bg-white/15 text-white"}`}
-    >
-      {isNew ? t.pack.newShort : t.pack.repeatedTag}
-    </span>
   );
 }
 
