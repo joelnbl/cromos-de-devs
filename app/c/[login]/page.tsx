@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Cromo } from "@/components/Cromo";
 import { DevWorldButton } from "@/components/DevWorldButton";
 import { cardByLogin } from "@/lib/data";
-import { RARITIES } from "@/lib/cards";
+import { cardName, RARITIES } from "@/lib/cards";
 import { getUser } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { login } = await params;
   const [card, { t }] = await Promise.all([cardByLogin(login), getT()]);
   if (!card) return { title: t.cardPage.notFound };
-  const name = card.name ?? card.login;
+  const name = cardName(card);
   const title = `${name} (@${card.login})`;
   const description = t.cardPage.description(name, t.rarity[card.rarity].label);
   const path = `/c/${card.login}`;
@@ -40,7 +40,7 @@ export default async function CardPage({ params }: { params: Promise<Params> }) 
   const { login } = await params;
   const [card, { user }, { t }] = await Promise.all([cardByLogin(login), getUser(), getT()]);
   if (!card) notFound();
-  const name = card.name ?? card.login;
+  const name = cardName(card);
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-ink pb-24 text-white md:pb-12">

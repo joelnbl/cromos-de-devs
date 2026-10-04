@@ -31,7 +31,7 @@ function avatarSrc(url: string) {
   }
 }
 
-export function initialsOf(name: string) {
+function initialsOf(name: string) {
   return name
     .split(/\s+/)
     .map((p) => p[0])

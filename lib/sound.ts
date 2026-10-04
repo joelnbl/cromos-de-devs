@@ -464,3 +464,91 @@ export const sfx = {
     for (let i = 0; i < 4; i++) grain(c, out, t + rnd(0, 0.18), rnd(0.01, 0.025), rnd(2500, 5000), 4, 0.05);
   },
 };
+
+/** Ambiente: pad grave y suave que dura mientras haya un mundo abierto. */
+let pad: { out: GainNode; oscs: OscillatorNode[]; lfo: OscillatorNode } | null = null;
+let ambientWanted = false;
+let ambientOff: (() => void) | null = null;
+
+function killPad(fade: number) {
+  const p = pad;
+  if (!p || !ctx) {
+    pad = null;
+    return;
+  }
+  pad = null;
+  const t = ctx.currentTime;
+  p.out.gain.cancelScheduledValues(t);
+  p.out.gain.setValueAtTime(Math.max(p.out.gain.value, 0.0001), t);
+  p.out.gain.exponentialRampToValueAtTime(0.0001, t + fade);
+  const stopAt = t + fade + 0.1;
+  p.oscs.forEach((o) => o.stop(stopAt));
+  p.lfo.stop(stopAt);
+}
+
+function startPad() {
+  if (pad || !ambientWanted) return;
+  const c = audio();
+  if (!c) return;
+  const t = c.currentTime;
+  const out = bus(c, 0, 0.6, 1);
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.05, t + 1.5);
+  const filter = c.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.Q.value = 2;
+  filter.frequency.value = 420;
+  const lfo = c.createOscillator();
+  lfo.frequency.value = 0.07;
+  const lfoGain = c.createGain();
+  lfoGain.gain.value = 220;
+  lfo.connect(lfoGain).connect(filter.frequency);
+  const oscs = [
+    [55, -7],
+    [82.4, 5],
+    [110, -3],
+  ].map(([f, d]) => {
+    const o = c.createOscillator();
+    o.type = "sine";
+    o.frequency.value = f;
+    o.detune.value = d;
+    o.connect(filter);
+    o.start(t);
+    return o;
+  });
+  lfo.start(t);
+  filter.connect(g).connect(out.input);
+  pad = { out: g, oscs, lfo };
+}
+
+export const ambient = {
+  start() {
+    ambientWanted = true;
+    if (!ambientOff) {
+      ambientOff = onSoundChange((on) => {
+        if (on) startPad();
+        else killPad(0.4);
+      });
+    }
+    startPad();
+  },
+  stop() {
+    ambientWanted = false;
+    ambientOff?.();
+    ambientOff = null;
+    killPad(1);
+  },
+};
+
+/** Sonidos suaves del mundo 3D. */
+export const worldSfx = {
+  /** Aire muy suave al acercar o alejar la cámara. */
+  zoom() {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime;
+    const out = bus(c, 0, 0.3, 1.1);
+    noiseBurst(c, out, t, 0.7, 300, 1800, "bandpass", 0.35, 0.9, 0.3);
+  },
+};

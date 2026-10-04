@@ -1,6 +1,6 @@
 import { cardNumber, RARITIES, type Rarity } from "@/lib/cards";
 
-export type MiniCardData = { id: number; login: string; name: string | null; rarity: Rarity };
+type MiniCardData = { id: number; login: string; name: string | null; rarity: Rarity };
 
 /** Ficha compacta para listas de cambios. */
 export function MiniCard({ card }: { card: MiniCardData }) {

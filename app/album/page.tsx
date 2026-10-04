@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ExchangeIcon, SearchIcon } from "@/components/icons";
 import { AlbumBook, type Sheet } from "@/components/AlbumBook";
 import { CARD_COLUMNS, RARITY_ORDER, countryName, type Card, type Rarity } from "@/lib/cards";
 import { getT } from "@/lib/i18n/server";
@@ -181,7 +182,7 @@ export default async function AlbumPage({ searchParams }: { searchParams: Promis
             <div className="grow" />
             {dupes > 0 && (
               <Link href="/cambios" className="btn btn-dark hidden shadow-[4px_4px_0_#fff] md:inline-flex">
-                <SwapIcon />
+                <ExchangeIcon size={20} strokeWidth={2.2} />
                 {t.album.tradeDupes(dupes)}
               </Link>
             )}
@@ -233,10 +234,7 @@ export default async function AlbumPage({ searchParams }: { searchParams: Promis
             <label htmlFor="album-q" className="sr-only">
               {t.album.searchLabel}
             </label>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" />
-            </svg>
+            <SearchIcon size={18} strokeWidth={2.2} />
             <input
               id="album-q"
               name="q"
@@ -310,14 +308,5 @@ function IndexChip({ href, name, a, b, active }: { href: string; name: string; a
         </span>
       </span>
     </Link>
-  );
-}
-
-function SwapIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M7 7h11l-3-3" />
-      <path d="M17 17H6l3 3" />
-    </svg>
   );
 }

@@ -54,3 +54,5 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 - **T-24** «Su mundo»: mundo 3D de cada dev con sus datos reales (torres de cristal por repo, holograma, cielo de estrellas, commits en espiral, anillos por año) desde /c/ y el álbum (Sonnet). ✔
 - **T-25** Sonidos rehechos uno a uno con bus maestro, compresor y reverb; medidos sin saturar (Sonnet). ✔
 - **T-26** Cromo premium: holo y brillo que siguen al dedo, canto grueso, grano de impresión, relieve y destello al tocar (Sonnet; ajuste del dorado de la legendaria por el coordinador). ✔
+- **T-27** Calidad de código: iconos, cuenta atrás y helpers centralizados, código y textos muertos borrados; capturas idénticas antes/después (Sonnet). ✔
+- **T-28** Su mundo 2.0: tocar torre → ficha del repo y «Ver en GitHub», holograma con música de su rareza, ambiente sonoro, halos y brillo de commits (Sonnet). ✔

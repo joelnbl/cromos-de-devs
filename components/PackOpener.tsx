@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Cromo } from "./Cromo";
 import { DoneToday, OddsPanel, PackSummary, StreakPanel, type PackInfo } from "./PackPanels";
-import { RARITIES, isTopRarity, type Card } from "@/lib/cards";
+import { cardName, RARITIES, isTopRarity, type Card } from "@/lib/cards";
 import { demoPack } from "@/lib/demo";
 import type { PackResult } from "@/app/actions";
 import { sfx } from "@/lib/sound";
@@ -420,7 +420,7 @@ function RevealCard({ pull, onNext, reduce }: { pull: Pull; onNext: () => void; 
         type="button"
         onClick={onNext}
         className="relative block cursor-pointer border-0 bg-transparent p-0"
-        aria-label={t.pack.nextAria(pull.card.name ?? pull.card.login, t.rarity[pull.card.rarity].label)}
+        aria-label={t.pack.nextAria(cardName(pull.card), t.rarity[pull.card.rarity].label)}
       >
         <Cromo card={pull.card} width={280} faceDown={!flipped} />
       </button>

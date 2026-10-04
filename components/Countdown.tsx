@@ -2,18 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-function format(ms: number) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return [h, m, sec].map((n) => String(n).padStart(2, "0")).join(":");
-}
-
-export function Countdown({ to }: { to: string }) {
-  const target = new Date(to).getTime();
+/** Hora actual en ms, actualizada cada segundo (null hasta montar, para no desajustar la hidratación). */
+export function useNow() {
   const [now, setNow] = useState<number | null>(null);
-
   useEffect(() => {
     const tick = () => setNow(Date.now());
     const first = setTimeout(tick, 0);
@@ -23,6 +14,16 @@ export function Countdown({ to }: { to: string }) {
       clearInterval(id);
     };
   }, []);
+  return now;
+}
 
-  return <time dateTime={to}>{now === null ? "--:--:--" : format(target - now)}</time>;
+/** Milisegundos a [horas, minutos, segundos] con dos cifras. */
+export function clockParts(ms: number) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((n) => String(n).padStart(2, "0"));
+}
+
+export function Countdown({ to }: { to: string }) {
+  const now = useNow();
+  return <time dateTime={to}>{now === null ? "--:--:--" : clockParts(new Date(to).getTime() - now).join(":")}</time>;
 }

@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Cromo } from "./Cromo";
+import { ChevronIcon, CloseIcon } from "./icons";
 import { DevWorldButton } from "./DevWorldButton";
-import { cardNumber, RARITIES, type Card } from "@/lib/cards";
+import { cardName, cardNumber, RARITIES, type Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
 import { useT } from "@/lib/i18n/client";
 
@@ -169,7 +170,7 @@ export function AlbumBook({
                         onPointerEnter={(e) => e.pointerType === "mouse" && sfx.brush()}
                         className="block cursor-zoom-in border-0 bg-transparent p-0 transition-transform hover:-translate-y-1"
                         style={{ rotate: `${tilt(card.id)}deg` }}
-                        aria-label={t.album.seeAria(card.name ?? card.login)}
+                        aria-label={t.album.seeAria(cardName(card))}
                       >
                         <Cromo card={card} interactive={false} eager={si === 0} className="album-slot" />
                         {qty > 1 && (
@@ -202,7 +203,7 @@ export function AlbumBook({
       <nav aria-label={t.album.albumsAria} className="flex flex-wrap items-center justify-between gap-3 pb-6 pt-2">
         {prev ? (
           <Link href={prev.href} scroll={false} onClick={() => sfx.page()} aria-label={t.album.prevAria} className="btn btn-ghost border-2 border-ink bg-white">
-            <Chevron dir="left" />
+            <ChevronIcon dir="left" />
             <span className="hidden sm:inline">{prev.label}</span>
           </Link>
         ) : (
@@ -229,7 +230,7 @@ export function AlbumBook({
         {next ? (
           <Link href={next.href} scroll={false} onClick={() => sfx.page()} aria-label={t.album.nextAria} className="btn btn-dark">
             <span className="hidden sm:inline">{next.label}</span>
-            <Chevron dir="right" />
+            <ChevronIcon dir="right" />
           </Link>
         ) : (
           <span />
@@ -250,7 +251,7 @@ export function AlbumBook({
             onTouchEnd={(e) => onTouchEnd(e, true)}
             role="dialog"
             aria-modal="true"
-            aria-label={t.album.cardAria(open.name ?? open.login)}
+            aria-label={t.album.cardAria(cardName(open))}
           >
             <button
               type="button"
@@ -259,15 +260,13 @@ export function AlbumBook({
               aria-label={t.album.close}
               className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-full border-2 border-white/50 text-white hover:bg-white/10"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-                <path d="M6 6l12 12M18 6 6 18" />
-              </svg>
+              <CloseIcon size={20} />
             </button>
 
             <div className="flex items-center gap-2 sm:gap-6" onClick={(e) => e.stopPropagation()}>
               {mine.length > 1 && (
                 <button type="button" onClick={() => step(-1)} aria-label={t.album.prevCard} className="hidden h-12 w-12 place-items-center rounded-full border-2 border-white/50 text-white hover:bg-white/10 sm:grid">
-                  <Chevron dir="left" />
+                  <ChevronIcon dir="left" />
                 </button>
               )}
               <motion.div
@@ -281,7 +280,7 @@ export function AlbumBook({
               </motion.div>
               {mine.length > 1 && (
                 <button type="button" onClick={() => step(1)} aria-label={t.album.nextCard} className="hidden h-12 w-12 place-items-center rounded-full border-2 border-white/50 text-white hover:bg-white/10 sm:grid">
-                  <Chevron dir="right" />
+                  <ChevronIcon dir="right" />
                 </button>
               )}
             </div>
@@ -311,13 +310,5 @@ export function AlbumBook({
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-function Chevron({ dir }: { dir: "left" | "right" }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={dir === "left" ? "m15 18-6-6 6-6" : "m9 18 6-6-6-6"} />
-    </svg>
   );
 }

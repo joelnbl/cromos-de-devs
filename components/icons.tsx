@@ -45,3 +45,29 @@ export const ShareIcon = ({ className }: P) => (
     <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13" />
   </svg>
 );
+
+type SizedProps = { className?: string; size?: number; strokeWidth?: number };
+const line = { fill: "none", stroke: "currentColor", strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+
+export const ChevronIcon = ({ dir = "right", size = 20 }: { dir?: "left" | "right"; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={2.4} {...line}>
+    <path d={dir === "left" ? "m15 18-6-6 6-6" : "m9 18 6-6-6-6"} />
+  </svg>
+);
+export const CloseIcon = ({ size = 18 }: SizedProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={2.4} {...line}>
+    <path d="M6 6l12 12M18 6 6 18" />
+  </svg>
+);
+export const SearchIcon = ({ size = 18, strokeWidth = 2.4 }: SizedProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={strokeWidth} {...line}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.5-3.5" />
+  </svg>
+);
+export const ExchangeIcon = ({ size = 18, strokeWidth = 2.4 }: SizedProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={strokeWidth} {...line}>
+    <path d="M7 7h11l-3-3" />
+    <path d="M17 17H6l3 3" />
+  </svg>
+);

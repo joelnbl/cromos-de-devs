@@ -53,10 +53,10 @@ export const PACK_ODDS_BOOST: Record<Rarity, number> = { comun: 50, rara: 18.5, 
  * Referentes de la comunidad que reciben la Icono sí o sí. Su cromo NO existe
  * hasta que ellos mismos entran con GitHub: esta lista solo decide la rareza.
  */
-export const ICONO_LOGINS = new Set(["joelnbl", "midudev", "mouredev", "freddier", "rauchg"]);
+const ICONO_LOGINS = new Set(["joelnbl", "midudev", "mouredev", "freddier", "rauchg"]);
 
 /** Dueño del proyecto: su cromo lleva el sello «Creador». */
-export const CREATOR_LOGINS = new Set(["joelnbl"]);
+const CREATOR_LOGINS = new Set(["joelnbl"]);
 export const isCreator = (login: string) => CREATOR_LOGINS.has(login.toLowerCase());
 
 export function computeRarity(stars: number, followers: number, login = ""): Rarity {
@@ -66,12 +66,6 @@ export function computeRarity(stars: number, followers: number, login = ""): Rar
   if (stars >= 500 || followers >= 200) return "epica";
   if (stars >= 50 || followers >= 30) return "rara";
   return "comun";
-}
-
-/** "PS" de la carta: crece despacio con estrellas y seguidores, en saltos de 10. */
-export function computeXp(card: Pick<Card, "stars" | "followers">): number {
-  const raw = Math.log2(1 + card.stars + card.followers * 2);
-  return Math.min(340, Math.max(40, 40 + Math.floor(raw * 2) * 10));
 }
 
 export function yearsOnGithub(createdAt: string | null): number {
@@ -90,6 +84,19 @@ export function formatCount(n: number): string {
 export function cardNumber(id: number): string {
   return String(id).padStart(3, "0");
 }
+
+/** Nombre a mostrar: el real si lo hay, si no el usuario de GitHub. */
+export function cardName(c: Pick<Card, "name" | "login">): string {
+  return c.name ?? c.login;
+}
+
+/** «#007 Nombre», para textos de cambios y etiquetas de accesibilidad. */
+export function cardLabel(c: Pick<Card, "id" | "name" | "login">): string {
+  return `#${cardNumber(c.id)} ${cardName(c)}`;
+}
+
+/** Usuario de GitHub válido: letras, números y guiones (así % y _ nunca actúan como comodines). */
+export const GITHUB_LOGIN = /^[A-Za-z0-9-]{1,39}$/;
 
 type LangStyle = {
   color: string;

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/lib/supabase/env";
+import { GITHUB_LOGIN } from "@/lib/cards";
 import { siteUrl } from "@/lib/site";
 
 export const revalidate = 3600;
@@ -25,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .limit(MAX_CARDS);
 
   for (const row of (data ?? []) as { login: string }[]) {
-    if (!/^[A-Za-z0-9-]{1,39}$/.test(row.login)) continue;
+    if (!GITHUB_LOGIN.test(row.login)) continue;
     entries.push({ url: `${base}/c/${row.login}`, changeFrequency: "weekly", priority: 0.6 });
   }
   return entries;

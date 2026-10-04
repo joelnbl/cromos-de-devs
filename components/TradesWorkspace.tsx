@@ -7,7 +7,8 @@ import { useFormStatus } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { acceptTrade, cancelTrade, createGift, createTrade } from "@/app/actions";
 import { Cromo } from "./Cromo";
-import { cardNumber, RARITIES, type Card } from "@/lib/cards";
+import { CloseIcon, ExchangeIcon, SearchIcon } from "./icons";
+import { cardLabel, cardName, cardNumber, RARITIES, type Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
 import { useT } from "@/lib/i18n/client";
 
@@ -19,7 +20,6 @@ type BoardItem = Match & { kind: "can" | "want" | "other" };
 type HistoryItem = { code: string; partner: Who | null; gave: Card | null; got: Card | null; at: string; ago: string; iCreated: boolean };
 
 const SEEN_KEY = "cromos.trades.seen";
-const label = (c: Card) => `#${cardNumber(c.id)} ${c.name ?? c.login}`;
 
 export function TradesWorkspace(props: {
   stats: { dupes: number; missing: number; open: number };
@@ -147,16 +147,14 @@ function AcceptedNotice({ notices }: { notices: HistoryItem[] }) {
       <Avatar src={item.partner?.avatar} size={52} />
       <p className="min-w-60 flex-1 text-[17px] font-bold leading-snug">
         {item.got
-          ? t.trades.noticeAccepted(item.partner?.login ?? t.trades.someone, label(item.got))
-          : item.gave && t.trades.noticeGift(item.partner?.login ?? t.trades.someone, label(item.gave))}
+          ? t.trades.noticeAccepted(item.partner?.login ?? t.trades.someone, cardLabel(item.got))
+          : item.gave && t.trades.noticeGift(item.partner?.login ?? t.trades.someone, cardLabel(item.gave))}
       </p>
       <Link href="/album" onClick={dismiss} className="btn btn-sun">
         {t.trades.seeInAlbum}
       </Link>
       <button type="button" onClick={dismiss} aria-label={t.trades.dismiss} className="grid h-11 w-11 place-items-center rounded-full hover:bg-black/5">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-          <path d="M6 6l12 12M18 6 6 18" />
-        </svg>
+        <CloseIcon />
       </button>
     </div>
   );
@@ -287,7 +285,7 @@ function NewTrade({
                         sfx.flip();
                       }}
                       aria-pressed={on}
-                      aria-label={`${label(card)} · ${t.trades.youHave(qty)}`}
+                      aria-label={`${cardLabel(card)} · ${t.trades.youHave(qty)}`}
                       className={`relative block rounded-2xl border-[3px] p-1 transition-transform ${
                         on ? "-translate-y-1 border-ink shadow-[0_0_0_4px_var(--color-sun)]" : "border-transparent hover:-translate-y-0.5"
                       }`}
@@ -307,10 +305,7 @@ function NewTrade({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <StepTitle n={2}>{t.trades.step2}</StepTitle>
               <label className="flex min-h-12 w-full items-center gap-2 rounded-full border-2 border-ink px-4 sm:w-auto">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m20 20-3.5-3.5" />
-                </svg>
+                <SearchIcon size={16} />
                 <span className="sr-only">{t.trades.searchMissing}</span>
                 <input
                   type="search"
@@ -341,7 +336,7 @@ function NewTrade({
                         }`}
                       >
                         <span className="font-mono text-[13px] font-extrabold">#{cardNumber(card.id)}</span>
-                        <span className="line-clamp-2 font-extrabold leading-tight">{card.name ?? card.login}</span>
+                        <span className="line-clamp-2 font-extrabold leading-tight">{cardName(card)}</span>
                         <span className="text-xs font-bold text-ink-soft">
                           {t.rarity[card.rarity].label} {RARITIES[card.rarity].symbol}
                         </span>
@@ -365,7 +360,7 @@ function NewTrade({
             <input type="hidden" name="offer" value={give ?? ""} />
             <input type="hidden" name="want" value={want ?? ""} />
             <p className="min-w-60 flex-1 font-bold leading-snug" aria-live="polite">
-              {giveCard && wantCard ? t.trades.summary(label(giveCard), label(wantCard)) : t.trades.pickWantFirst}
+              {giveCard && wantCard ? t.trades.summary(cardLabel(giveCard), cardLabel(wantCard)) : t.trades.pickWantFirst}
             </p>
             {giveCard && wantCard ? (
               <Submit className="btn btn-dark disabled:opacity-60">{t.trades.createShare}</Submit>
@@ -502,17 +497,14 @@ function MyTrades({ open, history, site }: { open: TradeView[]; history: History
             {open.map((tr) => {
               const url = `${site}/t/${tr.code}`;
               const text = tr.want
-                ? t.trade.shareText(tr.offer.name ?? tr.offer.login, tr.want.name ?? tr.want.login)
-                : t.trade.giftShareText(tr.offer.name ?? tr.offer.login);
+                ? t.trade.shareText(cardName(tr.offer), cardName(tr.want))
+                : t.trade.giftShareText(cardName(tr.offer));
               return (
                 <li key={tr.code} className="flex flex-col gap-3 rounded-2xl border-2 border-ink p-3.5">
                   <Link href={`/t/${tr.code}`} className="flex items-center gap-2.5 font-extrabold no-underline">
                     <Avatar src={tr.offer.avatar_url} />
                     <span>#{cardNumber(tr.offer.id)}</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M7 7h11l-3-3" />
-                      <path d="M17 17H6l3 3" />
-                    </svg>
+                    <ExchangeIcon />
                     {tr.want ? (
                       <>
                         <Avatar src={tr.want.avatar_url} dashed />
@@ -567,10 +559,10 @@ function MyTrades({ open, history, site }: { open: TradeView[]; history: History
               <Avatar src={h.partner?.avatar} />
               <p className="flex-1 text-[15px] font-bold leading-snug">
                 {h.gave && h.got
-                  ? t.trades.history(h.partner?.login ?? t.trades.someone, label(h.gave), label(h.got))
+                  ? t.trades.history(h.partner?.login ?? t.trades.someone, cardLabel(h.gave), cardLabel(h.got))
                   : h.gave
-                    ? t.trades.historyGiftGave(h.partner?.login ?? t.trades.someone, label(h.gave))
-                    : h.got && t.trades.historyGiftGot(h.partner?.login ?? t.trades.someone, label(h.got))}
+                    ? t.trades.historyGiftGave(h.partner?.login ?? t.trades.someone, cardLabel(h.gave))
+                    : h.got && t.trades.historyGiftGot(h.partner?.login ?? t.trades.someone, cardLabel(h.got))}
               </p>
               <span className="font-mono text-xs font-bold text-ink-soft">{h.ago}</span>
             </li>
@@ -637,15 +629,12 @@ function Board({ items }: { items: BoardItem[] }) {
               <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-sm font-bold leading-tight">
                 <div>
                   <span className="block text-[11px] font-extrabold uppercase text-ink-soft">{t.trades.gives}</span>
-                  {label(b.offer)}
+                  {cardLabel(b.offer)}
                 </div>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M7 7h11l-3-3" />
-                  <path d="M17 17H6l3 3" />
-                </svg>
+                <ExchangeIcon />
                 <div>
                   <span className="block text-[11px] font-extrabold uppercase text-ink-soft">{t.trades.asks}</span>
-                  {b.want ? label(b.want) : <span className="rounded-full bg-sun px-2 py-0.5">{t.trades.giftTag}</span>}
+                  {b.want ? cardLabel(b.want) : <span className="rounded-full bg-sun px-2 py-0.5">{t.trades.giftTag}</span>}
                 </div>
               </div>
               <div className="mt-auto">
@@ -680,7 +669,7 @@ function AcceptFromBoard({ item }: { item: BoardItem }) {
     <form action={acceptTrade} className="flex flex-col gap-2">
       <input type="hidden" name="code" value={item.code} />
       <input type="hidden" name="from" value="cambios" />
-      {last && confirming && <p className="text-[13px] font-extrabold text-[#b3261e]">{item.want && t.trades.confirmLast(label(item.want))}</p>}
+      {last && confirming && <p className="text-[13px] font-extrabold text-[#b3261e]">{item.want && t.trades.confirmLast(cardLabel(item.want))}</p>}
       {last && !confirming ? (
         <button
           type="button"
@@ -740,7 +729,7 @@ function Celebration({ card, gift, partner, left }: { card: Card; gift: boolean;
         </span>
       </motion.div>
       <p className="max-w-xs text-center text-lg font-semibold leading-snug text-white/90">
-        {t.trades.nowInAlbum(label(card))} {t.trades.left(left)}
+        {t.trades.nowInAlbum(cardLabel(card))} {t.trades.left(left)}
       </p>
       <div className="flex w-full max-w-sm flex-col gap-2.5">
         <Link href="/album" className="btn btn-sun w-full justify-center">

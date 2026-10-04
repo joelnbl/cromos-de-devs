@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Cromo } from "./Cromo";
-import { PACK_ODDS, PACK_ODDS_BOOST, RARITIES, RARITY_ORDER, cardNumber, countryName, type Card, type Rarity } from "@/lib/cards";
+import { ChevronIcon, ExchangeIcon } from "./icons";
+import { Countdown, clockParts, useNow } from "./Countdown";
+import { cardLabel, cardName, PACK_ODDS, PACK_ODDS_BOOST, RARITIES, RARITY_ORDER, cardNumber, countryName, type Card, type Rarity } from "@/lib/cards";
 import { useLocale, useT } from "@/lib/i18n/client";
 
 export type PackInfo = {
@@ -33,7 +35,7 @@ const RING: Record<Rarity, string> = { comun: "#c48a5a", rara: "#b8c2cc", epica:
 
 /* ---------- Cálculos sobre la colección ---------- */
 
-export function withPulls(owned: Record<number, number>, pulls: Pull[]) {
+function withPulls(owned: Record<number, number>, pulls: Pull[]) {
   const next = { ...owned };
   for (const p of pulls) next[p.card.id] = (next[p.card.id] ?? 0) + 1;
   return next;
@@ -155,7 +157,7 @@ export function PackSummary({ pulls, info, demo, nextAt, onDemoAgain }: {
   const newCount = pulls.filter((p) => p.isNew).length;
   const repeated = pulls.length - newCount;
   const best = [...pulls].sort((a, b) => RARITY_ORDER.indexOf(b.card.rarity) - RARITY_ORDER.indexOf(a.card.rarity))[0];
-  const bragText = best ? t.pack.bragText(best.card.name ?? best.card.login, t.rarity[best.card.rarity].label) : "";
+  const bragText = best ? t.pack.bragText(cardName(best.card), t.rarity[best.card.rarity].label) : "";
   const enc = encodeURIComponent;
   const shareUrl = `${info.site}/s?c=${pulls.map((p) => p.card.id).join(",")}`;
   const pct = (n: number) => (info.total ? (n / info.total) * 100 : 0);
@@ -266,7 +268,7 @@ export function PackSummary({ pulls, info, demo, nextAt, onDemoAgain }: {
         </button>
       ) : (
         <p className="font-mono text-sm text-white/80">
-          {t.pack.nextPackIn} <CountdownText to={nextAt} />
+          {t.pack.nextPackIn} <Countdown to={nextAt} />
         </p>
       )}
     </motion.div>
@@ -314,7 +316,7 @@ export function DoneToday({ info, nextAt }: { info: PackInfo; nextAt: string }) 
           <ul className="flex gap-2">
             {info.todayCards.map((c, i) => (
               <li key={`${c.id}-${i}`} className="flex-1">
-                <Link href={`/c/${c.login}`} className="flex flex-col items-center gap-1 no-underline" aria-label={`#${cardNumber(c.id)} ${c.name ?? c.login}`}>
+                <Link href={`/c/${c.login}`} className="flex flex-col items-center gap-1 no-underline" aria-label={cardLabel(c)}>
                   <img
                     src={c.avatar_url ?? ""}
                     alt=""
@@ -337,14 +339,14 @@ export function DoneToday({ info, nextAt }: { info: PackInfo; nextAt: string }) 
         <h3 id="mientras" className="text-lg font-black">
           {t.pack.meanwhile}
         </h3>
-        <Tile href="/cambios" strong icon={<SwapIcon />} title={dupes > 0 ? t.pack.tradeTile(dupes) : t.pack.tradeTileNone} sub={perfect > 0 ? t.pack.perfectShort(perfect) : t.pack.tradeTileSub} />
+        <Tile href="/cambios" strong icon={<ExchangeIcon size={28} strokeWidth={2.2} />} title={dupes > 0 ? t.pack.tradeTile(dupes) : t.pack.tradeTileNone} sub={perfect > 0 ? t.pack.perfectShort(perfect) : t.pack.tradeTileSub} />
         <button type="button" onClick={invite} className="flex items-center gap-3.5 rounded-2xl border-2 border-white/25 p-4 text-left hover:bg-white/5">
-          <ShareIcon />
+          <ShareTileIcon />
           <span className="flex grow flex-col gap-0.5">
             <span className="text-[17px] font-black">{copied ? t.pack.copied : t.pack.inviteTile}</span>
             <span className="text-sm font-semibold text-white/75">{t.pack.inviteTileSub}</span>
           </span>
-          <Chevron />
+          <ChevronIcon />
         </button>
         {selection && (
           <Tile
@@ -370,39 +372,15 @@ function Tile({ href, icon, title, sub, strong }: { href: string; icon: React.Re
         <span className="text-[17px] font-black">{title}</span>
         <span className={`text-sm font-semibold ${strong ? "" : "text-white/75"}`}>{sub}</span>
       </span>
-      <Chevron />
+      <ChevronIcon />
     </Link>
   );
-}
-
-function useNow() {
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    const tick = () => setNow(Date.now());
-    const first = setTimeout(tick, 0);
-    const id = setInterval(tick, 1000);
-    return () => {
-      clearTimeout(first);
-      clearInterval(id);
-    };
-  }, []);
-  return now;
-}
-
-function parts(ms: number) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((n) => String(n).padStart(2, "0"));
-}
-
-function CountdownText({ to }: { to: string }) {
-  const now = useNow();
-  return <time dateTime={to}>{now === null ? "--:--:--" : parts(new Date(to).getTime() - now).join(":")}</time>;
 }
 
 function BigCountdown({ to }: { to: string }) {
   const t = useT();
   const now = useNow();
-  const [h, m, s] = now === null ? ["--", "--", "--"] : parts(new Date(to).getTime() - now);
+  const [h, m, s] = now === null ? ["--", "--", "--"] : clockParts(new Date(to).getTime() - now);
   const box = "flex min-w-[4.5rem] flex-col items-center gap-1 rounded-2xl px-3 py-2.5";
   return (
     <time dateTime={to} className="mt-1 flex gap-2">
@@ -422,27 +400,12 @@ function BigCountdown({ to }: { to: string }) {
   );
 }
 
-function SwapIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M7 7h11l-3-3" />
-      <path d="M17 17H6l3 3" />
-    </svg>
-  );
-}
-function ShareIcon() {
+function ShareTileIcon() {
   return (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
       <path d="M16 6l-4-4-4 4" />
       <path d="M12 2v13" />
-    </svg>
-  );
-}
-function Chevron() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m9 18 6-6-6-6" />
     </svg>
   );
 }

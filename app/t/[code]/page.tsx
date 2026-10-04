@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Cromo } from "@/components/Cromo";
 import { ShareButtons } from "@/components/ShareButtons";
 import { acceptTrade } from "@/app/actions";
+import { cardName } from "@/lib/cards";
 import { cardById } from "@/lib/data";
 import { getUser } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/site";
@@ -103,8 +104,8 @@ export default async function TradePage({
                 url={`${siteUrl()}/t/${code}`}
                 text={
                   want
-                    ? t.trade.shareText(offer.name ?? offer.login, want.name ?? want.login)
-                    : t.trade.giftShareText(offer.name ?? offer.login)
+                    ? t.trade.shareText(cardName(offer), cardName(want))
+                    : t.trade.giftShareText(cardName(offer))
                 }
               />
             </>

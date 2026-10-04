@@ -13,6 +13,7 @@ import { Cromo } from "@/components/Cromo";
 import { formatCount, langStyle, yearsOnGithub, type Card } from "@/lib/cards";
 import { useT } from "@/lib/i18n/client";
 import { LOOK } from "@/lib/three/foilCard";
+import { ambient, sfx, worldSfx } from "@/lib/sound";
 
 type Props = { card: Card; onClose?: () => void };
 
@@ -102,6 +103,24 @@ function skyTexture() {
   return tex;
 }
 
+function haloTexture() {
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const g = c.getContext("2d")!;
+  const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gr.addColorStop(0, "rgba(255,255,255,1)");
+  gr.addColorStop(0.25, "rgba(255,255,255,0.55)");
+  gr.addColorStop(0.6, "rgba(255,255,255,0.12)");
+  gr.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 128, 128);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+type TowerFx = { glass: THREE.MeshPhysicalMaterial; cap: THREE.MeshPhysicalMaterial; halo: THREE.Sprite; light: THREE.PointLight; h: number; sel: number; selT: number };
+
 type Status = "loading" | "ready" | "failed";
 
 export default function DevWorld({ card, onClose }: Props) {
@@ -109,6 +128,10 @@ export default function DevWorld({ card, onClose }: Props) {
   const mount = useRef<HTMLDivElement>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
   const [status, setStatus] = useState<Status>("loading");
+  const [selected, setSelected] = useState<number | null>(null);
+  const api = useRef<{ select: (i: number | null) => void }>({ select: () => {} });
+  const repos = (card.top_repos ?? []).slice(0, 6);
+  const sel = selected !== null ? repos[selected] : undefined;
   const name = card.name?.trim() || card.login;
 
   useEffect(() => {
@@ -214,8 +237,12 @@ export default function DevWorld({ card, onClose }: Props) {
 
     // Torres de cristal
     const disposables: { dispose(): void }[] = [sky, env, pmrem, edgeMat];
+    const worldRepos = (card.top_repos ?? []).slice(0, 6);
     const towers: THREE.Group[] = [];
-    const repos = (card.top_repos ?? []).slice(0, 6);
+    const fx: TowerFx[] = [];
+    const pickables: THREE.Object3D[] = [];
+    const halo = haloTexture();
+    disposables.push(halo);
     const addLabel = (title: string, sub: string, color: string, y: number) => {
       const tex = labelTexture(title, sub, color, mono);
       const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false, toneMapped: false });
@@ -230,7 +257,7 @@ export default function DevWorld({ card, onClose }: Props) {
     const capGeo = new THREE.ConeGeometry(0.62, 0.8, 6);
     disposables.push(glassGeo, coreGeo, capGeo);
 
-    if (repos.length === 0) {
+    if (worldRepos.length === 0) {
       const g = new THREE.Group();
       const geo = new THREE.BoxGeometry(1.1, 4.4, 0.55);
       const mat = new THREE.MeshPhysicalMaterial({
@@ -244,15 +271,16 @@ export default function DevWorld({ card, onClose }: Props) {
       towers.push(g);
       disposables.push(geo, mat);
     }
-    repos.forEach((repo, i) => {
+    worldRepos.forEach((repo, i) => {
       const col = new THREE.Color(langStyle(repo.language).color);
       const h = 1.3 + Math.log(repo.stars + 1) * 0.62;
-      const ang = (i / repos.length) * Math.PI * 2 + 0.5;
+      const ang = (i / worldRepos.length) * Math.PI * 2 + 0.5;
       const g = new THREE.Group();
       const glassMat = new THREE.MeshPhysicalMaterial({
         color: col.clone().lerp(new THREE.Color(0xffffff), 0.25),
         transmission: 0.85, thickness: 1.4, roughness: 0.06, ior: 1.45, iridescence: 1, iridescenceIOR: 1.6,
         metalness: 0, clearcoat: 1, transparent: true, opacity: 0.92, attenuationColor: col, attenuationDistance: 1.4,
+        emissive: col, emissiveIntensity: 0,
       });
       const glass = new THREE.Mesh(glassGeo, glassMat);
       glass.scale.set(1, h, 1);
@@ -269,7 +297,19 @@ export default function DevWorld({ card, onClose }: Props) {
       base.position.y = 0.02;
       const tl = new THREE.PointLight(col, 8, 5, 1.8);
       tl.position.y = h * 0.5;
-      g.add(glass, core, cap, base, tl, addLabel(repo.name, `★ ${formatCount(repo.stars)}`, `#${col.getHexString()}`, h + 1.5));
+      const haloMat = new THREE.SpriteMaterial({ map: halo, color: col, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, toneMapped: false });
+      const haloSp = new THREE.Sprite(haloMat);
+      haloSp.scale.set(1.9, 1.9, 1);
+      haloSp.position.y = h + 0.85;
+      const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.05, h + 1.2, 8), new THREE.MeshBasicMaterial({ visible: false }));
+      hit.position.y = (h + 1.2) / 2;
+      hit.userData.tower = i;
+      glass.userData.tower = i;
+      cap.userData.tower = i;
+      pickables.push(hit, glass, cap);
+      g.add(glass, core, cap, base, tl, haloSp, hit, addLabel(repo.name, `★ ${formatCount(repo.stars)}`, `#${col.getHexString()}`, h + 1.5));
+      fx.push({ glass: glassMat, cap: capMat, halo: haloSp, light: tl, h, sel: 0, selT: 0 });
+      disposables.push(haloMat, hit.geometry, hit.material as THREE.Material);
       g.position.set(Math.cos(ang) * TOWER_R, 0, Math.sin(ang) * TOWER_R);
       g.rotation.y = hashStr(repo.name) % 6;
       world.add(g);
@@ -290,6 +330,9 @@ export default function DevWorld({ card, onClose }: Props) {
     );
     ring2.rotation.x = Math.PI / 2.4;
     holo.add(disc, ring, ring2);
+    disc.userData.holo = true;
+    ring.userData.holo = true;
+    pickables.push(disc, ring);
     world.add(holo);
     const beamMat = new THREE.MeshBasicMaterial({
       color: rarityColor, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
@@ -370,7 +413,13 @@ export default function DevWorld({ card, onClose }: Props) {
     const commits = new THREE.Points(comGeo, comMat);
     commits.frustumCulled = false;
     world.add(commits);
-    disposables.push(comGeo, comMat);
+    const glowMat = new THREE.PointsMaterial({
+      size: 0.55, sizeAttenuation: true, map: halo, color: langColor, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.2, depthWrite: false,
+    });
+    const commitGlow = new THREE.Points(comGeo, glowMat);
+    commitGlow.frustumCulled = false;
+    world.add(commitGlow);
+    disposables.push(comGeo, comMat, glowMat);
     const placeCommits = (time: number) => {
       for (let i = 0; i < nCom; i++) {
         const p = reduce ? comPhase[i] : (comPhase[i] + time * comSpeed[i]) % 1;
@@ -387,11 +436,53 @@ export default function DevWorld({ card, onClose }: Props) {
     // Cámara orbital propia
     const target = new THREE.Vector3(0, 1.6, 0);
     const cam = { theta: 0.6, phi: 1.22, dist: 19, tTheta: 0.6, tPhi: 1.22, tDist: 19, vTheta: 0, idle: 99, drag: false };
+    const tTarget = target.clone();
+    let focused = -1;
+    let spinRem = 0;
+    let pop = 0;
+    const select = (i: number | null) => {
+      const next = i !== null && fx[i] ? i : -1;
+      if (next === focused) return;
+      const wasFocused = focused >= 0;
+      focused = next;
+      setSelected(next >= 0 ? next : null);
+      fx.forEach((f, j) => (f.selT = j === next ? 1 : 0));
+      if (next >= 0) {
+        const tw = towers[next];
+        tTarget.set(tw.position.x, fx[next].h * 0.3 + 0.2, tw.position.z);
+        const want = Math.atan2(tw.position.x, tw.position.z);
+        let dTh = (want - cam.tTheta) % (Math.PI * 2);
+        if (dTh > Math.PI) dTh -= Math.PI * 2;
+        if (dTh < -Math.PI) dTh += Math.PI * 2;
+        cam.tTheta += dTh;
+        cam.vTheta = 0;
+        cam.tPhi = 1.3;
+        cam.tDist = Math.min(MAX_D, 8 + fx[next].h * 1.1);
+        sfx.flip();
+        worldSfx.zoom();
+      } else {
+        tTarget.set(0, 1.6, 0);
+        cam.tPhi = 1.22;
+        cam.tDist = 19;
+        cam.idle = 0;
+        if (wasFocused) worldSfx.zoom();
+      }
+    };
+    const apiRef = api.current;
+    apiRef.select = select;
+    const raycaster = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    let downAt: { x: number; y: number } | null = null;
+    let multi = false;
     const MIN_D = 7;
     const MAX_D = 42;
     const pointers = new Map<number, { x: number; y: number }>();
     let pinch = 0;
     const onDown = (e: PointerEvent) => {
+      if (pointers.size === 0) {
+        downAt = { x: e.clientX, y: e.clientY };
+        multi = false;
+      } else multi = true;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       canvas.setPointerCapture(e.pointerId);
       canvas.style.cursor = "grabbing";
@@ -421,7 +512,20 @@ export default function DevWorld({ card, onClose }: Props) {
       cam.vTheta = -dx * 0.008;
       cam.tPhi = THREE.MathUtils.clamp(cam.tPhi - dy * 0.006, 0.35, 1.5);
     };
+    const pick = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      raycaster.setFromCamera(ndc, camera);
+      const hit = raycaster.intersectObjects(pickables, false)[0];
+      if (hit && typeof hit.object.userData.tower === "number") select(hit.object.userData.tower as number);
+      else if (hit && hit.object.userData.holo) {
+        spinRem = Math.PI * 2;
+        pop = 1;
+        sfx.reveal(card.rarity);
+      } else if (focused >= 0) select(null);
+    };
     const onUp = (e: PointerEvent) => {
+      if (e.type === "pointerup" && downAt && !multi && pointers.size === 1 && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) < 6) pick(e);
       pointers.delete(e.pointerId);
       pinch = 0;
       if (pointers.size === 0) {
@@ -479,7 +583,7 @@ export default function DevWorld({ card, onClose }: Props) {
       clock += dt;
       cam.idle += dt;
       if (!cam.drag) {
-        if (!reduce && cam.idle > 2) cam.tTheta += dt * 0.12;
+        if (!reduce && cam.idle > 2 && focused < 0) cam.tTheta += dt * 0.12;
         else {
           cam.tTheta += cam.vTheta;
           cam.vTheta *= 0.92;
@@ -489,6 +593,24 @@ export default function DevWorld({ card, onClose }: Props) {
       cam.theta += (cam.tTheta - cam.theta) * k;
       cam.phi += (cam.tPhi - cam.phi) * k;
       cam.dist += (cam.tDist - cam.dist) * k;
+      target.lerp(tTarget, k);
+      fx.forEach((f, i) => {
+        f.sel += (f.selT - f.sel) * (reduce ? 1 : 1 - Math.pow(0.002, dt));
+        f.cap.emissiveIntensity = 0.7 + f.sel * 1.9;
+        f.glass.emissiveIntensity = f.sel * 0.45;
+        f.light.intensity = 8 + f.sel * 22;
+        const beat = reduce ? 0 : Math.sin(clock * 1.8 + i * 1.3);
+        const sc = 1.9 + beat * 0.25 + f.sel * 1.1;
+        f.halo.scale.set(sc, sc, 1);
+        f.halo.material.opacity = 0.65 + beat * 0.15 + f.sel * 0.3;
+      });
+      if (spinRem > 0) {
+        const step = Math.min(spinRem, Math.max(spinRem * (1 - Math.exp(-dt * 7)), dt * 2.5));
+        spinRem -= step;
+        if (!reduce) holo.rotation.y += step;
+      }
+      pop = Math.max(0, pop - dt * 2.2);
+      holo.scale.setScalar(1 + Math.sin(pop * Math.PI) * 0.18);
 
       if (!reduce) {
         world.position.y = Math.sin(clock * 0.8) * 0.18;
@@ -527,9 +649,12 @@ export default function DevWorld({ card, onClose }: Props) {
     resize();
     if (document.visibilityState === "visible") loop();
     queueMicrotask(() => setStatus("ready"));
+    ambient.start();
 
     return () => {
       disposed = true;
+      ambient.stop();
+      apiRef.select = () => {};
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVis);
       ro.disconnect();
@@ -591,9 +716,77 @@ export default function DevWorld({ card, onClose }: Props) {
           </span>
         </button>
       </div>
+      {status !== "failed" && repos.length > 0 && (
+        <ul
+          aria-label={t.world.reposNav}
+          className="sr-only focus-within:not-sr-only focus-within:absolute focus-within:left-4 focus-within:top-40 focus-within:flex focus-within:flex-col focus-within:gap-1"
+        >
+          {repos.map((r, i) => (
+            <li key={r.name}>
+              <button
+                type="button"
+                onClick={() => api.current.select(i)}
+                className="rounded-full border-2 border-white/80 bg-black/70 px-3 py-2 text-sm font-bold text-white focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-sun"
+              >
+                {t.world.repoOpen(r.name)}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {sel && (
+        <div
+          role="region"
+          aria-label={sel.name}
+          className="absolute inset-x-3 bottom-14 mx-auto max-w-md rounded-2xl border-2 border-white/80 bg-[#0b0d1d]/95 p-4 text-white shadow-2xl sm:bottom-16"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="min-w-0 break-words font-mono text-xl font-extrabold">{sel.name}</h3>
+            <button
+              type="button"
+              onClick={() => api.current.select(null)}
+              aria-label={t.world.back}
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-white/70 hover:bg-white/15 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-sun"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+          <p className="mt-1 text-base text-white/85">{sel.description?.trim() || t.world.noDescription}</p>
+          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-base font-bold">
+            <span>
+              ★ {formatCount(sel.stars)} {t.world.starsLabel}
+            </span>
+            {sel.language && (
+              <span className="flex items-center gap-2">
+                <span aria-hidden="true" className="inline-block h-3 w-3 rounded-full" style={{ background: langStyle(sel.language).color }} />
+                {sel.language}
+              </span>
+            )}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a
+              href={`https://github.com/${card.login}/${sel.name}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-sun min-h-11 flex-1 justify-center"
+            >
+              {t.world.viewOnGithub} <span aria-hidden="true">↗</span>
+            </a>
+            <button
+              type="button"
+              onClick={() => api.current.select(null)}
+              className="min-h-11 rounded-full border-2 border-white/70 px-4 text-base font-extrabold hover:bg-white/15 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-sun"
+            >
+              {t.world.back}
+            </button>
+          </div>
+        </div>
+      )}
       {status !== "failed" && (
         <p className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10 text-center text-sm font-bold text-white/85">
-          {t.world.help}
+          {sel ? t.world.help : `${t.world.helpTap} · ${t.world.help}`}
         </p>
       )}
     </div>
