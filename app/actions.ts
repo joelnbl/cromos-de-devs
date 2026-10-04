@@ -65,10 +65,13 @@ export async function acceptTrade(formData: FormData) {
   const { supabase, user } = await getUser();
   if (!supabase || !user) redirect(`/t/${code}`);
 
+  // Desde la página de cambios se vuelve allí, con la celebración
+  const back = formData.get("from") === "cambios";
   const { error } = await supabase.rpc("accept_trade", { p_code: code });
-  if (error) redirect(`/t/${code}?error=${codeOf(error)}`);
+  if (error) redirect(back ? `/cambios?error=${codeOf(error)}` : `/t/${code}?error=${codeOf(error)}`);
   revalidatePath("/album");
-  redirect(`/t/${code}?hecho=1`);
+  revalidatePath("/cambios");
+  redirect(back ? `/cambios?hecho=${encodeURIComponent(code)}` : `/t/${code}?hecho=1`);
 }
 
 export async function cancelTrade(formData: FormData) {

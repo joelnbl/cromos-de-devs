@@ -1,32 +1,47 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MiniCard, type MiniCardData } from "@/components/MiniCard";
-import { cancelTrade, createTrade } from "@/app/actions";
-import { cardNumber } from "@/lib/cards";
+import { TradesWorkspace, type TradeView, type Who } from "@/components/TradesWorkspace";
+import { CARD_COLUMNS, type Card } from "@/lib/cards";
 import { getUser } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { errorText } from "@/lib/i18n/dict";
+import { siteUrl } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
   return { title: t.trades.title };
 }
 
-const MINI = "id, login, name, rarity";
-
+type Search = { error?: string; dar?: string; busco?: string; hecho?: string };
 type TradeRow = {
   code: string;
   from_user: string;
-  offer: MiniCardData;
-  want: MiniCardData;
+  accepted_by: string | null;
+  offer_card_id: number;
+  want_card_id: number;
+  status: string;
+  created_at: string;
+  closed_at: string | null;
 };
 
-export default async function CambiosPage({ searchParams }: { searchParams: Promise<{ error?: string; dar?: string; busco?: string }> }) {
-  const { error, dar, busco } = await searchParams;
-  const [{ supabase, user }, { t }] = await Promise.all([getUser(), getT()]);
+/** «hace 2 h», «ayer»… en el idioma de la persona. */
+function timeAgo(iso: string, locale: string, now: number): string {
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto", style: "short" });
+  const min = Math.round((new Date(iso).getTime() - now) / 60_000);
+  if (min > -60) return rtf.format(Math.min(-1, min), "minute");
+  const h = Math.round(min / 60);
+  if (h > -24) return rtf.format(h, "hour");
+  const d = Math.round(h / 24);
+  if (d > -30) return rtf.format(d, "day");
+  return rtf.format(Math.round(d / 30), "month");
+}
+
+const TRADE_COLUMNS = "code, from_user, accepted_by, offer_card_id, want_card_id, status, created_at, closed_at";
+
+export default async function CambiosPage({ searchParams }: { searchParams: Promise<Search> }) {
+  const { error, dar, busco, hecho } = await searchParams;
+  const [{ supabase, user }, { t, locale }] = await Promise.all([getUser(), getT()]);
   if (supabase && !user) redirect("/?error=needLogin");
-  const message = errorText(t, error);
 
   if (!supabase || !user) {
     return (
@@ -37,134 +52,109 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
     );
   }
 
-  const [{ data: mine }, { data: all }, { data: openTrades }] = await Promise.all([
-    supabase.from("collection").select(`quantity, card:cards(${MINI})`).eq("user_id", user.id),
-    supabase.from("cards").select(MINI).order("id").limit(500),
+  const [{ data: cardRows }, { data: mine }, { data: openRows }, { data: doneRows }] = await Promise.all([
+    supabase.from("cards").select(`${CARD_COLUMNS}, user_id`).order("id").limit(1000),
+    supabase.from("collection").select("card_id, quantity").eq("user_id", user.id),
+    supabase.from("trades").select(TRADE_COLUMNS).eq("status", "abierto").order("created_at", { ascending: false }).limit(300),
     supabase
       .from("trades")
-      .select(`code, from_user, offer:cards!trades_offer_card_id_fkey(${MINI}), want:cards!trades_want_card_id_fkey(${MINI})`)
-      .eq("status", "abierto")
-      .order("created_at", { ascending: false })
-      .limit(40),
+      .select(TRADE_COLUMNS)
+      .eq("status", "hecho")
+      .or(`from_user.eq.${user.id},accepted_by.eq.${user.id}`)
+      .order("closed_at", { ascending: false })
+      .limit(30),
   ]);
 
-  const collection = (mine ?? []) as unknown as { quantity: number; card: MiniCardData }[];
-  const ownedIds = new Set(collection.map((c) => c.card.id));
-  const duplicates = collection.filter((c) => c.quantity >= 2);
-  const missing = ((all ?? []) as MiniCardData[]).filter((c) => !ownedIds.has(c.id));
-  const trades = (openTrades ?? []) as unknown as TradeRow[];
-  const myTrades = trades.filter((tr) => tr.from_user === user.id);
-  const board = trades.filter((tr) => tr.from_user !== user.id);
+  const now = new Date().getTime();
+  const ago = (iso: string) => timeAgo(iso, locale, now);
+  const cards = (cardRows ?? []) as (Card & { user_id: string })[];
+  const byId = new Map(cards.map((c) => [c.id, c as Card]));
+  const byUser = new Map(cards.map((c) => [c.user_id, c]));
+  const qty = new Map((mine ?? []).map((m) => [m.card_id as number, m.quantity as number]));
+  const who = (uid: string | null): Who | null => {
+    const c = uid ? byUser.get(uid) : null;
+    return c ? { login: c.login, avatar: c.avatar_url } : null;
+  };
+  const view = (r: TradeRow): TradeView | null => {
+    const offer = byId.get(r.offer_card_id);
+    const want = byId.get(r.want_card_id);
+    if (!offer || !want) return null;
+    return { code: r.code, from: who(r.from_user), offer, want, ago: ago(r.created_at) };
+  };
+
+  const open = ((openRows ?? []) as TradeRow[]).map((r) => ({ r, v: view(r) })).filter((x) => x.v) as { r: TradeRow; v: TradeView }[];
+  const others = open.filter(({ r }) => r.from_user !== user.id);
+  const myOpen = open.filter(({ r }) => r.from_user === user.id).map(({ v }) => v);
+
+  // Para ti: me dan uno que me falta y piden uno que tengo repetido. Uno por cromo ofrecido.
+  const seenOffer = new Set<number>();
+  const matches = others
+    .filter(({ v }) => !qty.has(v.offer.id) && (qty.get(v.want.id) ?? 0) >= 2)
+    .filter(({ v }) => !seenOffer.has(v.offer.id) && Boolean(seenOffer.add(v.offer.id)))
+    .slice(0, 6)
+    .map(({ v }) => ({ ...v, myQty: qty.get(v.want.id) ?? 0 }));
+  const matchCodes = new Set(matches.map((m) => m.code));
+
+  const board = others
+    .filter(({ v }) => !matchCodes.has(v.code))
+    .map(({ v }) => {
+      const have = qty.get(v.want.id) ?? 0;
+      const kind: "can" | "want" | "other" = have > 0 ? "can" : !qty.has(v.offer.id) ? "want" : "other";
+      return { ...v, myQty: have, kind };
+    })
+    .slice(0, 60);
+
+  // Cuántas personas ofrecen cada cromo (para elegir qué pedir)
+  const offered = new Map<number, number>();
+  for (const { v } of others) offered.set(v.offer.id, (offered.get(v.offer.id) ?? 0) + 1);
+
+  const dupes = cards.filter((c) => (qty.get(c.id) ?? 0) >= 2).map((c) => ({ card: c as Card, qty: qty.get(c.id)! }));
+  const missing = cards
+    .filter((c) => !qty.has(c.id))
+    .map((c) => ({ card: c as Card, offered: offered.get(c.id) ?? 0 }))
+    .sort((a, b) => b.offered - a.offered || a.card.id - b.card.id);
+
+  const done = (doneRows ?? []) as TradeRow[];
+  const history = done
+    .map((r) => {
+      const offer = byId.get(r.offer_card_id);
+      const want = byId.get(r.want_card_id);
+      if (!offer || !want) return null;
+      const iCreated = r.from_user === user.id;
+      return {
+        code: r.code,
+        partner: who(iCreated ? r.accepted_by : r.from_user),
+        gave: iCreated ? offer : want,
+        got: iCreated ? want : offer,
+        at: r.closed_at ?? r.created_at,
+        ago: ago(r.closed_at ?? r.created_at),
+        iCreated,
+      };
+    })
+    .filter((h) => h !== null);
+
+  // Celebración tras aceptar desde aquí
+  const justDone = hecho ? history.find((h) => h.code === hecho && !h.iCreated) : undefined;
+  const celebrate = justDone
+    ? { card: justDone.got, partner: justDone.partner, left: cards.filter((c) => !qty.has(c.id)).length }
+    : null;
+
+  const dupeCount = [...qty.values()].reduce((n, q) => n + Math.max(0, q - 1), 0);
 
   return (
-    <main className="min-h-dvh bg-paper pb-24 md:pb-12">
-      <div className="border-b-[3px] border-ink bg-sun">
-        <div className="mx-auto max-w-6xl px-4 py-8">
-          <h1 className="display text-6xl">{t.trades.title}</h1>
-          <p className="mt-2 text-lg font-semibold">{t.trades.subtitle}</p>
-        </div>
-      </div>
-
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 lg:grid-cols-2">
-        <section className="panel p-6">
-          <h2 className="display text-3xl">{t.trades.newTrade}</h2>
-          {message && (
-            <p role="alert" className="mt-3 rounded-lg bg-sun px-3 py-2 font-bold">
-              {message}
-            </p>
-          )}
-          {duplicates.length === 0 ? (
-            <p className="mt-4 text-lg">
-              {t.trades.noDupes}{" "}
-              <Link href="/sobre" className="font-bold underline">
-                {t.trades.openToday}
-              </Link>
-            </p>
-          ) : missing.length === 0 ? (
-            <p className="mt-4 text-lg">{t.trades.allCards}</p>
-          ) : (
-            <form action={createTrade} className="mt-5 flex flex-col gap-4">
-              <label className="flex flex-col gap-2 font-bold">
-                {t.trades.give}
-                <select name="offer" required defaultValue={dar} key={`o${dar ?? ""}`} className="min-h-12 rounded-xl border-2 border-ink bg-white px-3 font-semibold">
-                  {duplicates.map(({ card, quantity }) => (
-                    <option key={card.id} value={card.id}>
-                      #{cardNumber(card.id)} {card.name ?? card.login} ({t.trades.youHave(quantity)})
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex flex-col gap-2 font-bold">
-                {t.trades.want}
-                <select name="want" required defaultValue={busco} key={`w${busco ?? ""}`} className="min-h-12 rounded-xl border-2 border-ink bg-white px-3 font-semibold">
-                  {missing.map((card) => (
-                    <option key={card.id} value={card.id}>
-                      #{cardNumber(card.id)} {card.name ?? card.login}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button type="submit" className="btn btn-dark self-start">
-                {t.trades.create}
-              </button>
-            </form>
-          )}
-
-          {myTrades.length > 0 && (
-            <>
-              <h3 className="mt-8 text-xl font-extrabold">{t.trades.yourOpen}</h3>
-              <ul className="mt-3 flex flex-col gap-3">
-                {myTrades.map((tr) => (
-                  <li key={tr.code} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-ink p-3">
-                    <Link href={`/t/${tr.code}`} className="flex min-w-0 flex-1 items-center gap-2 no-underline">
-                      <MiniCard card={tr.offer} />
-                      <span aria-hidden="true" className="font-bold">→</span>
-                      <MiniCard card={tr.want} />
-                    </Link>
-                    <form action={cancelTrade}>
-                      <input type="hidden" name="code" value={tr.code} />
-                      <button type="submit" className="btn btn-ghost min-h-11 px-4 text-sm">
-                        {t.trades.cancel}
-                      </button>
-                    </form>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </section>
-
-        <section className="panel p-6">
-          <h2 className="display text-3xl">{t.trades.board}</h2>
-          <p className="mt-2 text-ink-soft">{t.trades.boardBody}</p>
-          {board.length === 0 ? (
-            <p className="mt-5 text-lg">{t.trades.boardEmpty}</p>
-          ) : (
-            <ul className="mt-5 flex flex-col gap-3">
-              {board.map((tr) => {
-                const canHelp = ownedIds.has(tr.want.id);
-                return (
-                  <li key={tr.code}>
-                    <Link
-                      href={`/t/${tr.code}`}
-                      className={`flex items-center gap-2 rounded-xl border-2 p-3 no-underline ${canHelp ? "border-ink bg-sun/40" : "border-ink/25"}`}
-                    >
-                      <span className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-                        <span className="text-xs font-bold uppercase text-ink-soft sm:hidden">{t.trades.gives}</span>
-                        <MiniCard card={tr.offer} />
-                        <span className="hidden font-bold sm:inline" aria-hidden="true">⇄</span>
-                        <span className="text-xs font-bold uppercase text-ink-soft sm:hidden">{t.trades.asks}</span>
-                        <MiniCard card={tr.want} />
-                      </span>
-                      {canHelp && <span className="shrink-0 rounded-full bg-ink px-3 py-1 text-xs font-bold text-white">{t.trades.youHaveIt}</span>}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-      </div>
-    </main>
+    <TradesWorkspace
+      stats={{ dupes: dupeCount, missing: missing.length, open: myOpen.length }}
+      error={errorText(t, error)}
+      matches={matches}
+      board={board}
+      dupes={dupes}
+      missing={missing}
+      myOpen={myOpen}
+      history={history}
+      notices={history.filter((h) => h.iCreated).slice(0, 5)}
+      celebrate={celebrate}
+      preset={{ give: Number(dar) || null, want: Number(busco) || null }}
+      site={siteUrl()}
+    />
   );
 }
