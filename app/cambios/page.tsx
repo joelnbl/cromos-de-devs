@@ -155,6 +155,7 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
       celebrate={celebrate}
       preset={{ give: Number(dar) || null, want: Number(busco) || null }}
       site={siteUrl()}
+      total={cards.length}
     />
   );
 }

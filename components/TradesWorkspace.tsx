@@ -33,6 +33,7 @@ export function TradesWorkspace(props: {
   celebrate: { card: Card; partner: Who | null; left: number } | null;
   preset: { give: number | null; want: number | null };
   site: string;
+  total: number;
 }) {
   const t = useT();
   const { stats } = props;
@@ -63,7 +64,7 @@ export function TradesWorkspace(props: {
         {props.matches.length > 0 && <ForYou matches={props.matches} />}
 
         <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-          <NewTrade dupes={props.dupes} missing={props.missing} preset={props.preset} />
+          <NewTrade dupes={props.dupes} missing={props.missing} preset={props.preset} total={props.total} site={props.site} />
           <MyTrades open={props.myOpen} history={props.history} site={props.site} />
         </div>
 
@@ -215,10 +216,14 @@ function NewTrade({
   dupes,
   missing,
   preset,
+  total,
+  site,
 }: {
   dupes: { card: Card; qty: number }[];
   missing: { card: Card; offered: number }[];
   preset: { give: number | null; want: number | null };
+  total: number;
+  site: string;
 }) {
   const t = useT();
   const [give, setGive] = useState<number | null>(
@@ -258,7 +263,7 @@ function NewTrade({
           </Link>
         </p>
       ) : missing.length === 0 ? (
-        <p className="text-lg">{t.trades.allCards}</p>
+        <AllCards dupes={dupes} total={total} site={site} />
       ) : (
         <>
           <div className="flex flex-col gap-3">
@@ -366,6 +371,62 @@ function NewTrade({
         </>
       )}
     </section>
+  );
+}
+
+/** Tienes todos los cromos que existen: no hay nada que pedir todavía. */
+function AllCards({ dupes, total, site }: { dupes: { card: Card; qty: number }[]; total: number; site: string }) {
+  const t = useT();
+  const [copied, setCopied] = useState(false);
+  const enc = encodeURIComponent;
+  const text = t.trades.inviteText;
+  return (
+    <div role="status" className="flex flex-col gap-4 rounded-2xl border-2 border-ink bg-[#fff4cf] p-4">
+      <p className="text-xl font-black leading-tight">{t.trades.allCardsTitle}</p>
+      <p className="font-semibold leading-snug">{t.trades.allCardsBody(total)}</p>
+      <ul className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 pt-2" aria-label={t.trades.statDupes}>
+        {dupes.map(({ card, qty }) => (
+          <li key={card.id} className="relative shrink-0">
+            <Cromo card={card} width={92} interactive={false} />
+            <span className="absolute -right-1 -top-1 rounded-full border-2 border-ink bg-sun px-2 font-mono text-xs font-extrabold">×{qty}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="font-extrabold">{t.trades.invite}</p>
+      <div className="flex flex-wrap gap-2">
+        <a
+          href={`https://wa.me/?text=${enc(`${text} ${site}`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-12 items-center rounded-full bg-[#25d366] px-4 font-black text-[#0b2e17] no-underline"
+        >
+          WhatsApp
+        </a>
+        <a
+          href={`https://x.com/intent/post?text=${enc(text)}&url=${enc(site)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-12 items-center rounded-full bg-ink px-4 font-black text-white no-underline"
+        >
+          {t.trades.postX}
+        </a>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(site);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            } catch {
+              // sin portapapeles
+            }
+          }}
+          className="inline-flex min-h-12 items-center rounded-full border-2 border-ink bg-white px-4 font-extrabold"
+        >
+          {copied ? t.trades.copied : t.trades.copy}
+        </button>
+      </div>
+    </div>
   );
 }
 

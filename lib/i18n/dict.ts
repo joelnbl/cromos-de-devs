@@ -247,6 +247,11 @@ const es = {
     another: "Hacer otro cambio",
     seeMyAlbum: "Verlo en mi álbum",
     someone: "alguien",
+    allCardsTitle: "Ya tienes todos los cromos que existen",
+    allCardsBody: (n: number) =>
+      `Ahora mismo hay ${n} devs en el juego y los tienes a todos, así que no hay ninguno que pedir. En cuanto entre gente nueva podrás cambiar tus repetidas por sus cromos.`,
+    invite: "Invita a tus amigos devs para que haya más cromos:",
+    inviteText: "Colecciono cromos de devs. Entra con GitHub, consigue tu cromo y cambiamos repetidos:",
   },
   trade: {
     title: "Cambio de cromos",
@@ -543,6 +548,11 @@ const en: Dict = {
     another: "Make another trade",
     seeMyAlbum: "See it in my album",
     someone: "someone",
+    allCardsTitle: "You already have every card there is",
+    allCardsBody: (n: number) =>
+      `There are ${n} devs in the game right now and you have them all, so there's nothing to ask for. As soon as new people join you can trade your duplicates for their cards.`,
+    invite: "Invite your dev friends so there are more cards:",
+    inviteText: "I collect dev trading cards. Sign in with GitHub, get your card and let's trade duplicates:",
   },
   trade: {
     title: "Card trade",
