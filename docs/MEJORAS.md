@@ -47,3 +47,4 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 - **T-12** Compartir el sobre: página `/s?c=…` con los cromos e imagen OG propia; el resumen del sobre comparte ese enlace (Sonnet). ✔
 - **T-18** Imagen OG de cada cambio y regalo en `/t/[código]` (Sonnet). ✔
 - **T-15** Ranking público `/ranking` con podio, filtros por país y lenguaje (Sonnet). ✔
+- **T-19** Web instalable en el móvil: manifest, iconos 192/512/maskable, abre en /sobre (Sonnet). ✔

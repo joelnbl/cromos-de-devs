@@ -28,6 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t.meta.description,
     openGraph: { type: "website", locale: t.meta.ogLocale, alternateLocale: ["es_ES", "en_US"], siteName: "Cromos de devs" },
     twitter: { card: "summary_large_image" },
+    appleWebApp: { capable: true, title: "Cromos", statusBarStyle: "black-translucent" },
   };
 }
 
