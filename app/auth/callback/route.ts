@@ -10,11 +10,21 @@ export async function GET(request: NextRequest) {
   const next = safeNext(searchParams.get("next"));
   const fail = (msg: string) => NextResponse.redirect(`${origin}/?error=${encodeURIComponent(msg)}`);
 
+  const providerError = searchParams.get("error_description") ?? searchParams.get("error");
+  if (providerError) return fail(`GitHub o Supabase rechazaron el login: ${providerError}`);
+
   const supabase = await createClient();
-  if (!supabase || !code) return fail("No se pudo iniciar sesión.");
+  if (!supabase) return fail("La web está en modo demo: faltan las variables de Supabase.");
+  if (!code) return fail("No llegó el código de login.");
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error || !data.session) return fail("No se pudo iniciar sesión con GitHub.");
+  if (error || !data.session) {
+    console.error("callback: exchangeCodeForSession falló", error?.code, error?.message);
+    const hint = /code verifier|code_verifier|flow state/i.test(error?.message ?? "")
+      ? " Empieza el login desde esta misma dirección web (la Site URL de Supabase debe ser esta)."
+      : "";
+    return fail(`No se pudo iniciar sesión con GitHub (${error?.message ?? "sin sesión"}).${hint}`);
+  }
 
   const token = data.session.provider_token;
   const admin = createAdminClient();
