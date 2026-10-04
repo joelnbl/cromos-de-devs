@@ -2,18 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AlbumGrid } from "@/components/AlbumGrid";
-import { CARD_COLUMNS, COUNTRIES, type Card } from "@/lib/cards";
+import { CARD_COLUMNS, countryName, type Card } from "@/lib/cards";
+import { getT } from "@/lib/i18n/server";
 import { DEMO_CARDS } from "@/lib/demo";
 import { getUser } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Mi álbum" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t.album.title };
+}
 
 type Search = { lenguaje?: string; pais?: string };
 
 export default async function AlbumPage({ searchParams }: { searchParams: Promise<Search> }) {
   const { lenguaje, pais } = await searchParams;
-  const { supabase, user } = await getUser();
-  if (supabase && !user) redirect("/?error=" + encodeURIComponent("Entra con GitHub para ver tu álbum."));
+  const [{ supabase, user }, { t, locale }] = await Promise.all([getUser(), getT()]);
+  if (supabase && !user) redirect("/?error=needLogin");
+  const country = (c: string) => countryName(c, locale, t.myCard.otherCountry);
 
   let cards: Card[] = [];
   let owned = new Map<number, number>();
@@ -46,7 +51,7 @@ export default async function AlbumPage({ searchParams }: { searchParams: Promis
   }
 
   const have = cards.filter((c) => owned.has(c.id)).length;
-  const title = pais ? `Selección ${COUNTRIES[pais] ?? pais}` : lenguaje ? `Colección ${lenguaje}` : "Álbum completo";
+  const title = pais ? t.album.selection(country(pais)) : lenguaje ? t.album.collection(lenguaje) : t.album.complete;
   const pct = cards.length ? Math.round((have / cards.length) * 100) : 0;
 
   return (
@@ -55,7 +60,7 @@ export default async function AlbumPage({ searchParams }: { searchParams: Promis
         <div className="mx-auto max-w-6xl px-4 py-8">
           <p className="font-mono text-sm font-bold uppercase">{title}</p>
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <h1 className="display text-6xl">Mi álbum</h1>
+            <h1 className="display text-6xl">{t.album.title}</h1>
             <p className="font-mono text-2xl font-bold">
               {have} / {cards.length}
             </p>
@@ -66,7 +71,7 @@ export default async function AlbumPage({ searchParams }: { searchParams: Promis
             aria-valuenow={pct}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label="Progreso del álbum"
+            aria-label={t.album.progressAria}
           >
             <div className="h-full bg-ink transition-all" style={{ width: `${pct}%` }} />
           </div>
@@ -74,13 +79,13 @@ export default async function AlbumPage({ searchParams }: { searchParams: Promis
       </div>
 
       <div className="mx-auto max-w-6xl px-4">
-        <nav aria-label="Álbumes" className="flex gap-2 overflow-x-auto py-4">
+        <nav aria-label={t.album.albumsAria} className="flex gap-2 overflow-x-auto py-4">
           <Link href="/album" className="chip" aria-current={!lenguaje && !pais ? "page" : undefined}>
-            Todos
+            {t.album.all}
           </Link>
           {countries.map((c) => (
             <Link key={c} href={`/album?pais=${c}`} className="chip" aria-current={pais === c ? "page" : undefined}>
-              {COUNTRIES[c] ?? c}
+              {country(c)}
             </Link>
           ))}
           {languages.map((l) => (

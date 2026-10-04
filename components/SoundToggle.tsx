@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { isSoundOn, onSoundChange, setSoundOn, sfx } from "@/lib/sound";
+import { useT } from "@/lib/i18n/client";
 
 export function SoundToggle({ className = "" }: { className?: string }) {
   const [on, setOn] = useState(true);
+  const t = useT();
 
   useEffect(() => {
     const t = setTimeout(() => setOn(isSoundOn()), 0);
@@ -23,7 +25,7 @@ export function SoundToggle({ className = "" }: { className?: string }) {
         if (!on) sfx.pop();
       }}
       aria-pressed={on}
-      aria-label={on ? "Silenciar sonidos" : "Activar sonidos"}
+      aria-label={on ? t.common.soundOff : t.common.soundOn}
       className={`grid h-11 w-11 place-items-center rounded-full border-2 border-white/40 text-white hover:bg-white/10 ${className}`}
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

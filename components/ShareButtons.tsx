@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { ShareIcon } from "./icons";
+import { useT } from "@/lib/i18n/client";
 
 export function ShareButtons({ url, text }: { url: string; text: string }) {
   const [copied, setCopied] = useState(false);
+  const t = useT();
   const enc = encodeURIComponent;
 
   const share = async () => {
@@ -29,7 +31,7 @@ export function ShareButtons({ url, text }: { url: string; text: string }) {
         target="_blank"
         rel="noopener noreferrer"
       >
-        Compartir en X
+        {t.share.x}
       </a>
       <a
         className="btn btn-ghost"
@@ -41,7 +43,7 @@ export function ShareButtons({ url, text }: { url: string; text: string }) {
       </a>
       <button type="button" className="btn btn-ghost" onClick={share}>
         <ShareIcon />
-        <span aria-live="polite">{copied ? "¡Enlace copiado!" : "Copiar enlace"}</span>
+        <span aria-live="polite">{copied ? t.share.copied : t.share.copy}</span>
       </button>
     </div>
   );

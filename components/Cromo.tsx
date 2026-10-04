@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, type CSSProperties, type PointerEvent } from "react";
 import { RARITIES, cardNumber, formatCount, langStyle, yearsOnGithub, type Card } from "@/lib/cards";
+import { useT } from "@/lib/i18n/client";
 
 type Props = {
   card: Card;
@@ -30,8 +31,10 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
   const ref = useRef<HTMLDivElement>(null);
   const frame = useRef<number | null>(null);
 
+  const t = useT();
   const lang = langStyle(card.top_language);
-  const rarity = RARITIES[card.rarity];
+  const langName = card.top_language ?? t.card.polyglot;
+  const rarity = { ...RARITIES[card.rarity], label: t.rarity[card.rarity].label };
   const level = yearsOnGithub(card.github_created_at);
   const displayName = card.name?.trim() || card.login;
   const topRepo = card.top_repos[0];
@@ -77,7 +80,7 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
       onPointerLeave={onLeave}
       style={{ ...(width ? { "--w": `${width}px` } : {}), "--type": lang.color, ...style } as CSSProperties}
       role="img"
-      aria-label={`Cromo ${rarity.label.toLowerCase()} de ${displayName} (@${card.login}), ${lang.name}`}
+      aria-label={t.card.aria(rarity.label, displayName, card.login, langName)}
     >
       <div className="cromo-tilt">
         <div className="cromo-face cromo-front" aria-hidden="true">
@@ -104,10 +107,10 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
                   <span className="cromo-sep" />
                   <span className="cromo-lang">
                     <span className="cromo-dot" />
-                    {lang.name}
+                    {langName}
                   </span>
                   <span className="cromo-right">
-                    NV {level}
+                    {t.card.level} {level}
                     {card.country ? ` · ${card.country}` : ""}
                   </span>
                 </div>
@@ -115,15 +118,15 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
               <div className="cromo-stats">
                 <div className="cromo-stat">
                   <span className="cromo-stat-value">{formatCount(card.stars)}</span>
-                  <span className="cromo-stat-label cromo-mono">ESTRELLAS</span>
+                  <span className="cromo-stat-label cromo-mono">{t.card.stars}</span>
                 </div>
                 <div className="cromo-stat">
                   <span className="cromo-stat-value">{formatCount(card.followers)}</span>
-                  <span className="cromo-stat-label cromo-mono">FANS</span>
+                  <span className="cromo-stat-label cromo-mono">{t.card.fans}</span>
                 </div>
                 <div className="cromo-stat">
                   <span className="cromo-stat-value">{formatCount(card.commits)}</span>
-                  <span className="cromo-stat-label cromo-mono">COMMITS</span>
+                  <span className="cromo-stat-label cromo-mono">{t.card.commits}</span>
                 </div>
               </div>
               <div className="cromo-repo cromo-mono">

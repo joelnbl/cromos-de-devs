@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
+import { useT } from "@/lib/i18n/client";
 import { CARD_H, CARD_W, LOOK, createAmbience, createFoilCard, drawCardBack, drawCardFace, type FoilCard } from "@/lib/three/foilCard";
 
 type Pull = { card: Card; isNew: boolean };
@@ -31,6 +32,8 @@ type Slot = {
 };
 
 export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Props) {
+  const t = useT();
+  const tRef = useRef(t);
   const mount = useRef<HTMLDivElement>(null);
   const indexRef = useRef(index);
   const cb = useRef({ onRevealed, onFail, onTap });
@@ -56,7 +59,7 @@ export default function Reveal3D({ pulls, index, onRevealed, onFail, onTap }: Pr
         cb.current.onFail();
         return;
       }
-      const faces = await Promise.all(pulls.map((p) => drawCardFace(p.card)));
+      const faces = await Promise.all(pulls.map((p) => drawCardFace(p.card, tRef.current)));
       if (disposed) {
         renderer.dispose();
         return;

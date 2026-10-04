@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, JetBrains_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
 import { siteUrl } from "@/lib/site";
+import { getT } from "@/lib/i18n/server";
+import { LocaleProvider } from "@/lib/i18n/client";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -18,28 +20,30 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl()),
-  title: {
-    default: "Cromos de devs · Colecciona devs. Que te coleccionen.",
-    template: "%s · Cromos de devs",
-  },
-  description:
-    "Entra con GitHub y recibe tu cromo. Abre un sobre gratis cada día, cambia repetidos con tus amigos y completa el álbum.",
-  openGraph: { type: "website", locale: "es_ES", siteName: "Cromos de devs" },
-  twitter: { card: "summary_large_image" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return {
+    metadataBase: new URL(siteUrl()),
+    title: { default: t.meta.title, template: "%s · Cromos de devs" },
+    description: t.meta.description,
+    openGraph: { type: "website", locale: t.meta.ogLocale, alternateLocale: ["es_ES", "en_US"], siteName: "Cromos de devs" },
+    twitter: { card: "summary_large_image" },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#FFC72C",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { locale } = await getT();
   return (
-    <html lang="es" className={`${archivo.variable} ${mono.variable}`}>
+    <html lang={locale} className={`${archivo.variable} ${mono.variable}`}>
       <body className="antialiased">
-        <SiteHeader />
-        {children}
+        <LocaleProvider locale={locale}>
+          <SiteHeader />
+          {children}
+        </LocaleProvider>
       </body>
     </html>
   );

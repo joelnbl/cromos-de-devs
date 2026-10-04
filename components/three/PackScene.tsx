@@ -18,6 +18,8 @@ type Props = {
   tearSignal: number;
   /** El arrastre avanza el rasgado (0..1); útil para la pista visual. */
   onProgress?: (p: number) => void;
+  /** Texto de la etiqueta del sobre («5 CROMOS · T1»). */
+  label?: string;
 };
 
 const W = 2;
@@ -25,7 +27,7 @@ const H = 3.2;
 const STRIP = 0.42;
 const D = 0.06;
 
-function makeFoilCanvas(withText: boolean) {
+function makeFoilCanvas(withText: boolean, label = "5 CROMOS · T1") {
   const c = document.createElement("canvas");
   c.width = 512;
   c.height = Math.round((512 * H) / W);
@@ -96,7 +98,7 @@ function makeFoilCanvas(withText: boolean) {
     g.fill();
     g.fillStyle = "#FFC72C";
     g.font = "700 30px ui-monospace, Menlo, monospace";
-    g.fillText("5 CROMOS · T1", cx, cy + 219);
+    g.fillText(label, cx, cy + 219);
   }
   return c;
 }
@@ -161,7 +163,7 @@ function makeGlowTexture(color: string) {
   return new THREE.CanvasTexture(c);
 }
 
-export default function PackScene({ onInteract, getLegendary, onTorn, onFail, tearSignal, onProgress }: Props) {
+export default function PackScene({ onInteract, getLegendary, onTorn, onFail, tearSignal, onProgress, label }: Props) {
   const mount = useRef<HTMLDivElement>(null);
   const api = useRef<{ tear: () => void } | null>(null);
   const cb = useRef({ onInteract, getLegendary, onTorn, onFail, onProgress });
@@ -204,7 +206,7 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
     scene.add(goldLight);
 
     // --- Texturas y materiales
-    const frontCanvas = makeFoilCanvas(true);
+    const frontCanvas = makeFoilCanvas(true, label);
     const plainCanvas = makeFoilCanvas(false);
     const normal = makeCrinkleNormal();
     const frontTex = new THREE.CanvasTexture(frontCanvas);
@@ -505,7 +507,7 @@ export default function PackScene({ onInteract, getLegendary, onTorn, onFail, te
       renderer.dispose();
       canvas.remove();
     };
-  }, []);
+  }, [label]);
 
   useEffect(() => {
     if (tearSignal > 0) api.current?.tear();

@@ -130,6 +130,7 @@ export function cardOgImage(card: Card | null) {
             <span>¿Quién</span>
             <span>me tiene?</span>
           </div>
+          <div style={{ display: "flex", fontSize: 34, fontWeight: 700, marginTop: -8, opacity: 0.75 }}>Who has my card?</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
             <span style={{ fontSize: 72, fontWeight: 900 }}>{card?.owners ?? 0}</span>
             <span style={{ fontSize: 30, fontWeight: 700 }}>{card?.owners === 1 ? "persona tiene mi cromo" : "personas tienen mi cromo"}</span>

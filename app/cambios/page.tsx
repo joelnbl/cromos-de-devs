@@ -5,8 +5,13 @@ import { MiniCard, type MiniCardData } from "@/components/MiniCard";
 import { cancelTrade, createTrade } from "@/app/actions";
 import { cardNumber } from "@/lib/cards";
 import { getUser } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
+import { errorText } from "@/lib/i18n/dict";
 
-export const metadata: Metadata = { title: "Cambios" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t.trades.title };
+}
 
 const MINI = "id, login, name, rarity";
 
@@ -19,17 +24,15 @@ type TradeRow = {
 
 export default async function CambiosPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const { supabase, user } = await getUser();
-  if (supabase && !user) redirect("/?error=" + encodeURIComponent("Entra con GitHub para hacer cambios."));
+  const [{ supabase, user }, { t }] = await Promise.all([getUser(), getT()]);
+  if (supabase && !user) redirect("/?error=needLogin");
+  const message = errorText(t, error);
 
   if (!supabase || !user) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-16 pb-24">
-        <h1 className="display text-6xl">Cambios</h1>
-        <p className="mt-4 text-lg">
-          Aquí ofreces un cromo repetido y pides otro que te falte. Se crea un enlace: quien lo abra y tenga ese cromo
-          puede aceptar el cambio. En modo demo no se guardan cambios.
-        </p>
+        <h1 className="display text-6xl">{t.trades.title}</h1>
+        <p className="mt-4 text-lg">{t.trades.demoBody}</p>
       </main>
     );
   }
@@ -50,46 +53,49 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
   const duplicates = collection.filter((c) => c.quantity >= 2);
   const missing = ((all ?? []) as MiniCardData[]).filter((c) => !ownedIds.has(c.id));
   const trades = (openTrades ?? []) as unknown as TradeRow[];
-  const myTrades = trades.filter((t) => t.from_user === user.id);
-  const board = trades.filter((t) => t.from_user !== user.id);
+  const myTrades = trades.filter((tr) => tr.from_user === user.id);
+  const board = trades.filter((tr) => tr.from_user !== user.id);
 
   return (
     <main className="min-h-dvh bg-paper pb-24 md:pb-12">
       <div className="border-b-[3px] border-ink bg-sun">
         <div className="mx-auto max-w-6xl px-4 py-8">
-          <h1 className="display text-6xl">Cambios</h1>
-          <p className="mt-2 text-lg font-semibold">Da un repetido, pide uno que te falte y comparte el enlace.</p>
+          <h1 className="display text-6xl">{t.trades.title}</h1>
+          <p className="mt-2 text-lg font-semibold">{t.trades.subtitle}</p>
         </div>
       </div>
 
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 lg:grid-cols-2">
         <section className="panel p-6">
-          <h2 className="display text-3xl">Nuevo cambio</h2>
-          {error && (
+          <h2 className="display text-3xl">{t.trades.newTrade}</h2>
+          {message && (
             <p role="alert" className="mt-3 rounded-lg bg-sun px-3 py-2 font-bold">
-              {error}
+              {message}
             </p>
           )}
           {duplicates.length === 0 ? (
             <p className="mt-4 text-lg">
-              Aún no tienes repetidos. <Link href="/sobre" className="font-bold underline">Abre tu sobre de hoy</Link>.
+              {t.trades.noDupes}{" "}
+              <Link href="/sobre" className="font-bold underline">
+                {t.trades.openToday}
+              </Link>
             </p>
           ) : missing.length === 0 ? (
-            <p className="mt-4 text-lg">¡Tienes todos los cromos! No hay nada que pedir.</p>
+            <p className="mt-4 text-lg">{t.trades.allCards}</p>
           ) : (
             <form action={createTrade} className="mt-5 flex flex-col gap-4">
               <label className="flex flex-col gap-2 font-bold">
-                Doy (repetido)
+                {t.trades.give}
                 <select name="offer" required className="min-h-12 rounded-xl border-2 border-ink bg-white px-3 font-semibold">
                   {duplicates.map(({ card, quantity }) => (
                     <option key={card.id} value={card.id}>
-                      #{cardNumber(card.id)} {card.name ?? card.login} (tienes {quantity})
+                      #{cardNumber(card.id)} {card.name ?? card.login} ({t.trades.youHave(quantity)})
                     </option>
                   ))}
                 </select>
               </label>
               <label className="flex flex-col gap-2 font-bold">
-                Pido (me falta)
+                {t.trades.want}
                 <select name="want" required className="min-h-12 rounded-xl border-2 border-ink bg-white px-3 font-semibold">
                   {missing.map((card) => (
                     <option key={card.id} value={card.id}>
@@ -99,26 +105,26 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
                 </select>
               </label>
               <button type="submit" className="btn btn-dark self-start">
-                Crear cambio y enlace
+                {t.trades.create}
               </button>
             </form>
           )}
 
           {myTrades.length > 0 && (
             <>
-              <h3 className="mt-8 text-xl font-extrabold">Tus cambios abiertos</h3>
+              <h3 className="mt-8 text-xl font-extrabold">{t.trades.yourOpen}</h3>
               <ul className="mt-3 flex flex-col gap-3">
-                {myTrades.map((t) => (
-                  <li key={t.code} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-ink p-3">
-                    <Link href={`/t/${t.code}`} className="flex min-w-0 flex-1 items-center gap-2 no-underline">
-                      <MiniCard card={t.offer} />
+                {myTrades.map((tr) => (
+                  <li key={tr.code} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-ink p-3">
+                    <Link href={`/t/${tr.code}`} className="flex min-w-0 flex-1 items-center gap-2 no-underline">
+                      <MiniCard card={tr.offer} />
                       <span aria-hidden="true" className="font-bold">→</span>
-                      <MiniCard card={t.want} />
+                      <MiniCard card={tr.want} />
                     </Link>
                     <form action={cancelTrade}>
-                      <input type="hidden" name="code" value={t.code} />
+                      <input type="hidden" name="code" value={tr.code} />
                       <button type="submit" className="btn btn-ghost min-h-11 px-4 text-sm">
-                        Cancelar
+                        {t.trades.cancel}
                       </button>
                     </form>
                   </li>
@@ -129,28 +135,28 @@ export default async function CambiosPage({ searchParams }: { searchParams: Prom
         </section>
 
         <section className="panel p-6">
-          <h2 className="display text-3xl">Tablón de cambios</h2>
-          <p className="mt-2 text-ink-soft">Ofertas abiertas de otros devs. Si tienes lo que piden, acéptala.</p>
+          <h2 className="display text-3xl">{t.trades.board}</h2>
+          <p className="mt-2 text-ink-soft">{t.trades.boardBody}</p>
           {board.length === 0 ? (
-            <p className="mt-5 text-lg">Todavía no hay ofertas. Crea la primera.</p>
+            <p className="mt-5 text-lg">{t.trades.boardEmpty}</p>
           ) : (
             <ul className="mt-5 flex flex-col gap-3">
-              {board.map((t) => {
-                const canHelp = ownedIds.has(t.want.id);
+              {board.map((tr) => {
+                const canHelp = ownedIds.has(tr.want.id);
                 return (
-                  <li key={t.code}>
+                  <li key={tr.code}>
                     <Link
-                      href={`/t/${t.code}`}
+                      href={`/t/${tr.code}`}
                       className={`flex items-center gap-2 rounded-xl border-2 p-3 no-underline ${canHelp ? "border-ink bg-sun/40" : "border-ink/25"}`}
                     >
                       <span className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-                        <span className="text-xs font-bold uppercase text-ink-soft sm:hidden">Da</span>
-                        <MiniCard card={t.offer} />
+                        <span className="text-xs font-bold uppercase text-ink-soft sm:hidden">{t.trades.gives}</span>
+                        <MiniCard card={tr.offer} />
                         <span className="hidden font-bold sm:inline" aria-hidden="true">⇄</span>
-                        <span className="text-xs font-bold uppercase text-ink-soft sm:hidden">Pide</span>
-                        <MiniCard card={t.want} />
+                        <span className="text-xs font-bold uppercase text-ink-soft sm:hidden">{t.trades.asks}</span>
+                        <MiniCard card={tr.want} />
                       </span>
-                      {canHelp && <span className="shrink-0 rounded-full bg-ink px-3 py-1 text-xs font-bold text-white">Lo tienes</span>}
+                      {canHelp && <span className="shrink-0 rounded-full bg-ink px-3 py-1 text-xs font-bold text-white">{t.trades.youHaveIt}</span>}
                     </Link>
                   </li>
                 );

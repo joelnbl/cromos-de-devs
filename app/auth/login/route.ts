@@ -6,10 +6,10 @@ import { safeNext } from "@/lib/site";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const next = safeNext(searchParams.get("next"));
-  const fail = (msg: string) => NextResponse.redirect(`${origin}/?error=${encodeURIComponent(msg)}`);
+  const fail = (code: string) => NextResponse.redirect(`${origin}/?error=${code}`);
 
   const supabase = await createClient();
-  if (!supabase) return fail("La web está en modo demo: faltan las variables de Supabase en Vercel.");
+  if (!supabase) return fail("loginDemo");
 
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
     });
     if (error || !data.url) {
       console.error("login: signInWithOAuth falló", error?.message);
-      return fail(`No se pudo abrir GitHub: ${error?.message ?? "sin URL"}`);
+      return fail("loginOpen");
     }
     return NextResponse.redirect(data.url);
   } catch (e) {
     console.error("login: error inesperado", e instanceof Error ? e.message : e);
-    return fail("No se pudo abrir GitHub. Revisa NEXT_PUBLIC_SUPABASE_URL en Vercel.");
+    return fail("loginOpen");
   }
 }

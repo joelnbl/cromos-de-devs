@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import { Cromo } from "./Cromo";
 import type { Card } from "@/lib/cards";
+import { useT } from "@/lib/i18n/client";
 
 const POSE = [
   { rotate: -12, x: 70, y: 26 },
@@ -12,10 +13,11 @@ const POSE = [
 
 export function HeroFan({ cards }: { cards: Card[] }) {
   const reduce = useReducedMotion();
+  const t = useT();
   const examples = cards.every((c) => c.avatar_url?.startsWith("/demo/"));
   return (
     <figure className="m-0 flex flex-col items-center">
-    <div className="flex h-[400px] items-center justify-center md:h-[460px]" aria-label="Cromos de ejemplo">
+    <div className="flex h-[400px] items-center justify-center md:h-[460px]" aria-label={t.home.examplesAria}>
       {cards.slice(0, 3).map((card, i) => (
         <motion.div
           key={card.id}
@@ -30,7 +32,7 @@ export function HeroFan({ cards }: { cards: Card[] }) {
       ))}
     </div>
     {examples && (
-      <figcaption className="font-mono text-xs font-bold text-ink/70">Cromos de ejemplo · personas inventadas</figcaption>
+      <figcaption className="font-mono text-xs font-bold text-ink/70">{t.home.examplesCaption}</figcaption>
     )}
     </figure>
   );

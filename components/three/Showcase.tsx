@@ -6,6 +6,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { Cromo } from "@/components/Cromo";
 import type { Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
+import { useT } from "@/lib/i18n/client";
 import { CARD_H, CARD_W, LOOK, createAmbience, createFoilCard, drawCardBack, drawCardFace } from "@/lib/three/foilCard";
 
 function pickMime() {
@@ -17,6 +18,7 @@ type Status = "loading" | "ready" | "recording" | "failed";
 
 /** Vitrina 3D de tu cromo, con grabación de un vídeo de 5 s. */
 export default function Showcase({ card }: { card: Card }) {
+  const t = useT();
   const mount = useRef<HTMLDivElement>(null);
   const record = useRef<(() => void) | null>(null);
   const flip = useRef<(() => void) | null>(null);
@@ -38,7 +40,7 @@ export default function Showcase({ card }: { card: Card }) {
         setStatus("failed");
         return;
       }
-      const faceCanvas = await drawCardFace(card);
+      const faceCanvas = await drawCardFace(card, t);
       if (disposed) {
         renderer.dispose();
         return;
@@ -205,7 +207,7 @@ export default function Showcase({ card }: { card: Card }) {
       disposed = true;
       cleanup();
     };
-  }, [card]);
+  }, [card, t]);
 
   useEffect(
     () => () => {
@@ -223,7 +225,7 @@ export default function Showcase({ card }: { card: Card }) {
         className="relative h-[480px] w-[min(88vw,400px)] overflow-hidden rounded-3xl border-2 border-ink shadow-[6px_6px_0_#111]"
         style={{ background: "radial-gradient(circle at 50% 45%, #2e2208, #0d0b08 65%)" }}
       >
-        <div ref={mount} className="absolute inset-0" aria-label="Tu cromo en 3D. Arrastra para girarlo." role="img" />
+        <div ref={mount} className="absolute inset-0" aria-label={t.showcase.aria} role="img" />
         {status === "loading" && (
           <div className="absolute inset-0 grid place-items-center">
             <Cromo card={card} width={230} interactive={false} />
@@ -238,32 +240,32 @@ export default function Showcase({ card }: { card: Card }) {
 
       {status !== "failed" && (
         <>
-          <p className="text-sm font-bold text-ink-soft">Arrastra para girarla</p>
+          <p className="text-sm font-bold text-ink-soft">{t.showcase.drag}</p>
           <div className="flex flex-wrap justify-center gap-3">
             <button type="button" className="btn btn-dark" disabled={status !== "ready"} onClick={() => record.current?.()}>
-              {status === "recording" ? "Grabando… 5 s" : "Grabar vídeo de 5 s"}
+              {status === "recording" ? t.showcase.recording : t.showcase.record}
             </button>
             <button type="button" className="btn btn-ghost" disabled={status !== "ready"} onClick={() => flip.current?.()}>
-              Dar la vuelta
+              {t.showcase.flip}
             </button>
             {video && (
               <a className="btn btn-ghost" href={video.url} download={video.file.name}>
-                Descargar vídeo
+                {t.showcase.download}
               </a>
             )}
             {video && canShareFile && (
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={() => navigator.share({ files: [video.file], text: "¿Quién me tiene? Mi cromo de dev" }).catch(() => {})}
+                onClick={() => navigator.share({ files: [video.file], text: t.showcase.shareText }).catch(() => {})}
               >
-                Compartir vídeo
+                {t.showcase.shareVideo}
               </button>
             )}
           </div>
           {noVideo && (
             <p role="alert" className="max-w-sm text-center text-sm font-semibold">
-              Tu navegador no permite grabar vídeo. Prueba con Chrome o Safari actualizados.
+              {t.showcase.noVideo}
             </p>
           )}
         </>

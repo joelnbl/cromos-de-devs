@@ -6,9 +6,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { Cromo } from "./Cromo";
 import { cardNumber, RARITIES, type Card } from "@/lib/cards";
 import { sfx } from "@/lib/sound";
+import { useT } from "@/lib/i18n/client";
 
 export function AlbumGrid({ cards, owned }: { cards: Card[]; owned: Record<number, number> }) {
   const [open, setOpen] = useState<Card | null>(null);
+  const t = useT();
 
   useEffect(() => {
     if (!open) return;
@@ -20,8 +22,8 @@ export function AlbumGrid({ cards, owned }: { cards: Card[]; owned: Record<numbe
   if (!cards.length) {
     return (
       <div className="panel my-8 p-8 text-center">
-        <p className="text-lg font-bold">Este álbum aún está vacío.</p>
-        <p className="mt-2 text-ink-soft">Cuando alguien de aquí se registre, su hueco aparecerá.</p>
+        <p className="text-lg font-bold">{t.album.empty}</p>
+        <p className="mt-2 text-ink-soft">{t.album.emptyBody}</p>
       </div>
     );
   }
@@ -48,7 +50,7 @@ export function AlbumGrid({ cards, owned }: { cards: Card[]; owned: Record<numbe
                     sfx.reveal(card.rarity);
                   }}
                   className="relative cursor-zoom-in border-0 bg-transparent p-0"
-                  aria-label={`Ver a ${card.name ?? card.login}`}
+                  aria-label={t.album.seeAria(card.name ?? card.login)}
                 >
                   <Cromo card={card} className="[--w:104px] sm:[--w:150px]" interactive={false} />
                   {qty > 1 && (
@@ -64,10 +66,10 @@ export function AlbumGrid({ cards, owned }: { cards: Card[]; owned: Record<numbe
                     background:
                       "repeating-linear-gradient(135deg, #dcdcd7 0 6px, #e4e4df 6px 12px)",
                   }}
-                  aria-label={`Te falta el cromo número ${card.id}`}
+                  aria-label={t.album.missingAria(card.id)}
                 >
                   <span className="h-10 w-10 rounded-xl bg-ink/80 blur-[1.5px] sm:h-14 sm:w-14" aria-hidden="true" />
-                  <span className="text-[11px] font-extrabold uppercase text-ink/60 sm:text-xs">¿Quién será?</span>
+                  <span className="text-[11px] font-extrabold uppercase text-ink/60 sm:text-xs">{t.album.whoWillItBe}</span>
                   <span className="font-mono text-[10px] font-bold text-ink/50 sm:text-xs">
                     #{cardNumber(card.id)} {RARITIES[card.rarity].symbol}
                   </span>
@@ -88,7 +90,7 @@ export function AlbumGrid({ cards, owned }: { cards: Card[]; owned: Record<numbe
             onClick={() => setOpen(null)}
             role="dialog"
             aria-modal="true"
-            aria-label={`Cromo de ${open.name ?? open.login}`}
+            aria-label={t.album.cardAria(open.name ?? open.login)}
           >
             <motion.div
               initial={{ scale: 0.5, rotateY: -90 }}
@@ -101,10 +103,10 @@ export function AlbumGrid({ cards, owned }: { cards: Card[]; owned: Record<numbe
             </motion.div>
             <div className="flex flex-wrap justify-center gap-3" onClick={(e) => e.stopPropagation()}>
               <Link href={`/c/${open.login}`} className="btn btn-sun">
-                Ver su página
+                {t.album.seePage}
               </Link>
               <button type="button" className="btn btn-ghost border-white text-white" onClick={() => setOpen(null)}>
-                Cerrar
+                {t.album.close}
               </button>
             </div>
           </motion.div>

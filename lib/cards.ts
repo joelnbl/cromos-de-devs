@@ -122,3 +122,13 @@ export const COUNTRIES: Record<string, string> = {
   GB: "Reino Unido", FR: "Francia", DE: "Alemania", IT: "Italia", PT: "Portugal", IN: "India",
   CA: "Canadá", OT: "Otro",
 };
+
+/** Nombre del país en el idioma de la página («VE» → «Venezuela» / «Venezuela»). */
+export function countryName(code: string, locale: string, other = "Otro"): string {
+  if (code === "OT") return other;
+  try {
+    return new Intl.DisplayNames([locale], { type: "region" }).of(code) ?? COUNTRIES[code] ?? code;
+  } catch {
+    return COUNTRIES[code] ?? code;
+  }
+}

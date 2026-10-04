@@ -3,7 +3,7 @@ import { cardOgImage, OG_SIZE } from "@/lib/og";
 
 export const size = OG_SIZE;
 export const contentType = "image/png";
-export const alt = "Cromo de dev: ¿quién me tiene?";
+export const alt = "Cromo de dev: ¿quién me tiene? · Dev card: who has me?";
 
 export default async function Image({ params }: { params: Promise<{ login: string }> }) {
   const { login } = await params;

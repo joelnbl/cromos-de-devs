@@ -8,27 +8,27 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = safeNext(searchParams.get("next"));
-  const fail = (msg: string) => NextResponse.redirect(`${origin}/?error=${encodeURIComponent(msg)}`);
+  const fail = (code: string) => NextResponse.redirect(`${origin}/?error=${code}`);
 
   const providerError = searchParams.get("error_description") ?? searchParams.get("error");
-  if (providerError) return fail(`GitHub o Supabase rechazaron el login: ${providerError}`);
+  if (providerError) {
+    console.error("callback: proveedor rechazó el login", providerError);
+    return fail("loginProvider");
+  }
 
   const supabase = await createClient();
-  if (!supabase) return fail("La web está en modo demo: faltan las variables de Supabase.");
-  if (!code) return fail("No llegó el código de login.");
+  if (!supabase) return fail("loginDemo");
+  if (!code) return fail("loginNoCode");
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error || !data.session) {
     console.error("callback: exchangeCodeForSession falló", error?.code, error?.message);
-    const hint = /code verifier|code_verifier|flow state/i.test(error?.message ?? "")
-      ? " Empieza el login desde esta misma dirección web (la Site URL de Supabase debe ser esta)."
-      : "";
-    return fail(`No se pudo iniciar sesión con GitHub (${error?.message ?? "sin sesión"}).${hint}`);
+    return fail(/code verifier|code_verifier|flow state/i.test(error?.message ?? "") ? "loginVerifier" : "loginFailed");
   }
 
   const token = data.session.provider_token;
   const admin = createAdminClient();
-  if (!token || !admin) return fail("Falta configurar el servidor (clave de servicio de Supabase).");
+  if (!token || !admin) return fail("serverKey");
 
   try {
     const stats = await fetchCardStats(token);
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     }
   } catch (e) {
     console.error("callback: no se pudo crear o actualizar el cromo", e instanceof Error ? e.message : e);
-    return fail("Entraste, pero no pudimos leer tu GitHub. Inténtalo de nuevo.");
+    return fail("githubRead");
   }
 
   return NextResponse.redirect(`${origin}${next}`);

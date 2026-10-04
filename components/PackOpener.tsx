@@ -11,6 +11,7 @@ import { demoPack } from "@/lib/demo";
 import type { PackResult } from "@/app/actions";
 import { sfx } from "@/lib/sound";
 import { SoundToggle } from "./SoundToggle";
+import { useT } from "@/lib/i18n/client";
 
 const PackScene = dynamic(() => import("./three/PackScene"), { ssr: false });
 const Reveal3D = dynamic(() => import("./three/Reveal3D"), { ssr: false });
@@ -26,6 +27,7 @@ type Props = {
 };
 
 export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
+  const t = useT();
   const [phase, setPhase] = useState<Phase>(openedToday ? "done-today" : "idle");
   const [pulls, setPulls] = useState<Pull[]>([]);
   const [index, setIndex] = useState(0);
@@ -52,7 +54,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
         try {
           return await open();
         } catch {
-          return { ok: false, error: "No se pudo abrir el sobre. Inténtalo de nuevo." };
+          return { ok: false, code: "packFailed" };
         }
       };
       request.current = run().then((r) => (result.current = r));
@@ -72,8 +74,8 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
     request.current = null;
     result.current = null;
     if (!r.ok) {
-      setError(r.error);
-      setPhase(r.error.includes("Ya abriste") ? "done-today" : "idle");
+      setError(t.errors[r.code]);
+      setPhase(r.code === "alreadyOpened" ? "done-today" : "idle");
       setAttempt((a) => a + 1);
       return;
     }
@@ -92,7 +94,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
     setPhase("fan");
     if (!reduce) sfx.whoosh();
     setTimeout(() => setPhase("reveal"), reduce ? 0 : 1300);
-  }, [fetchPack, reduce]);
+  }, [fetchPack, reduce, t.errors]);
 
   /** Sobre en CSS (sin WebGL o con animaciones reducidas). */
   const tear = () => {
@@ -139,18 +141,19 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
               onTorn={() => void finishTear()}
               onFail={() => setWebglFailed(true)}
               onProgress={setDragHint}
+              label={t.pack.fiveCards}
             />
             <SwipeHint progress={dragHint} />
           </div>
           <p className="text-lg font-bold text-white" aria-live="polite">
-            Desliza el dedo sobre el sobre para rasgarlo
+            {t.pack.swipe}
           </p>
           <button
             type="button"
             className="font-bold text-sun underline underline-offset-4"
             onClick={() => setTearSignal((n) => n + 1)}
           >
-            Abrir sin deslizar
+            {t.pack.openNoSwipe}
           </button>
         </div>
       )}
@@ -159,7 +162,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
         <div className="relative z-10 flex flex-col items-center gap-8">
           <Pack tearing={phase === "tearing"} onOpen={tear} reduce={Boolean(reduce)} />
           <p className="text-lg font-bold text-white" aria-live="polite">
-            {phase === "tearing" ? "Abriendo…" : "Toca el sobre para abrirlo"}
+            {phase === "tearing" ? t.pack.opening : t.pack.tapToOpen}
           </p>
         </div>
       )}
@@ -192,7 +195,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
                   <span
                     className={`block rounded-full border-2 border-ink px-4 py-1.5 font-mono text-sm font-bold shadow-[3px_3px_0_#111] ${pulls[index].isNew ? "bg-sun text-ink" : "bg-white text-ink"}`}
                   >
-                    {pulls[index].isNew ? "¡NUEVO!" : "REPETIDO"}
+                    {pulls[index].isNew ? t.pack.newTag : t.pack.repeatedTag}
                   </span>
                 </motion.div>
               )}
@@ -200,11 +203,11 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
           </div>
           <p className="h-5 font-mono text-sm font-bold text-sun" aria-live="polite">
             {revealed === index
-              ? `${RARITIES[pulls[index].card.rarity].symbol} ${RARITIES[pulls[index].card.rarity].label.toUpperCase()} · ${pulls[index].card.name ?? pulls[index].card.login}`
+              ? `${RARITIES[pulls[index].card.rarity].symbol} ${t.rarity[pulls[index].card.rarity].label.toUpperCase()} · ${pulls[index].card.name ?? pulls[index].card.login}`
               : ""}
           </p>
           <button type="button" onClick={next} disabled={revealed !== index} className="btn btn-sun">
-            {index + 1 >= pulls.length ? "Ver resumen" : "Siguiente cromo"}
+            {index + 1 >= pulls.length ? t.pack.summary : t.pack.next}
           </button>
         </div>
       )}
@@ -230,7 +233,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
             </AnimatePresence>
           </div>
           <button type="button" onClick={next} className="btn btn-sun mt-6">
-            {index + 1 >= pulls.length ? "Ver resumen" : "Siguiente cromo"}
+            {index + 1 >= pulls.length ? t.pack.summary : t.pack.next}
           </button>
         </div>
       )}
@@ -242,7 +245,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
           animate={{ opacity: 1, y: 0 }}
         >
           <h2 className="display text-center text-5xl text-white md:text-6xl">
-            {newCount === 0 ? "Todos repetidos" : newCount === 1 ? "¡1 nuevo!" : `¡${newCount} nuevos!`}
+            {newCount === 0 ? t.pack.allRepeated : t.pack.nNew(newCount)}
           </h2>
           <div className="flex flex-wrap justify-center gap-4">
             {pulls.map((p, i) => (
@@ -260,17 +263,17 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
           </div>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/album" className="btn btn-sun">
-              Ver mi álbum
+              {t.pack.seeAlbum}
             </Link>
             {newCount < pulls.length && (
               <Link href="/cambios" className="btn btn-ghost border-white text-white">
-                Cambiar repetidos
+                {t.pack.tradeDupes}
               </Link>
             )}
           </div>
           {!demo && (
             <p className="font-mono text-sm text-white/80">
-              Próximo sobre en <Countdown to={nextAt} />
+              {t.pack.nextPackIn} <Countdown to={nextAt} />
             </p>
           )}
           {demo && (
@@ -283,7 +286,7 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
                 setAttempt((a) => a + 1);
               }}
             >
-              Abrir otro (solo en modo demo)
+              {t.pack.demoAgain}
             </button>
           )}
         </motion.div>
@@ -295,9 +298,9 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
             <div className="sobre-top" />
             <div className="sobre-body" />
           </div>
-          <h2 className="display text-5xl">Sobre abierto</h2>
+          <h2 className="display text-5xl">{t.pack.opened}</h2>
           <p className="max-w-sm text-lg">
-            Ya abriste el sobre de hoy. El siguiente llega en{" "}
+            {t.pack.openedBefore}{" "}
             <span className="font-mono font-bold text-sun">
               <Countdown to={nextAt} />
             </span>
@@ -305,10 +308,10 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/album" className="btn btn-sun">
-              Ver mi álbum
+              {t.pack.seeAlbum}
             </Link>
             <Link href="/mi-cromo" className="btn btn-ghost border-white text-white">
-              Compartir mi cromo
+              {t.pack.shareMyCard}
             </Link>
           </div>
         </div>
@@ -316,12 +319,12 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
 
       {phase === "empty" && (
         <div className="relative z-10 flex max-w-md flex-col items-center gap-5 text-center text-white">
-          <h2 className="display text-5xl">Aún no hay más devs</h2>
+          <h2 className="display text-5xl">{t.pack.emptyTitle}</h2>
           <p className="text-lg">
-            Eres de los primeros. Comparte tu cromo para que entre más gente y tus sobres traigan cromos.
+            {t.pack.emptyBody}
           </p>
           <Link href="/mi-cromo" className="btn btn-sun">
-            Compartir mi cromo
+            {t.pack.shareMyCard}
           </Link>
         </div>
       )}
@@ -330,11 +333,12 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
 }
 
 function Tag({ isNew }: { isNew: boolean }) {
+  const t = useT();
   return (
     <span
       className={`rounded-full px-3 py-1 font-mono text-xs font-bold ${isNew ? "bg-sun text-ink" : "bg-white/15 text-white"}`}
     >
-      {isNew ? "NUEVO" : "REPETIDO"}
+      {isNew ? t.pack.newShort : t.pack.repeatedTag}
     </span>
   );
 }
@@ -353,6 +357,7 @@ function Spotlight() {
 }
 
 function Pack({ tearing, onOpen, reduce }: { tearing: boolean; onOpen: () => void; reduce: boolean }) {
+  const t = useT();
   const ref = useRef<HTMLButtonElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
@@ -362,7 +367,7 @@ function Pack({ tearing, onOpen, reduce }: { tearing: boolean; onOpen: () => voi
       type="button"
       onClick={onOpen}
       disabled={tearing}
-      aria-label="Abrir el sobre del día"
+      aria-label={t.pack.openAria}
       className="relative cursor-pointer border-0 bg-transparent p-0 focus-visible:outline-4 focus-visible:outline-offset-8 focus-visible:outline-sun"
       style={{ perspective: 800 }}
       onPointerMove={(e) => {
@@ -411,7 +416,7 @@ function Pack({ tearing, onOpen, reduce }: { tearing: boolean; onOpen: () => voi
             de devs
           </span>
           <span className="rounded-full bg-ink px-3 py-1 font-mono text-[0.8em] font-bold text-sun">
-            5 CROMOS · T1
+            {t.pack.fiveCards}
           </span>
         </motion.div>
       </div>
@@ -432,6 +437,7 @@ function Pack({ tearing, onOpen, reduce }: { tearing: boolean; onOpen: () => voi
 }
 
 function RevealCard({ pull, onNext, reduce }: { pull: Pull; onNext: () => void; reduce: boolean }) {
+  const t = useT();
   const [flipped, setFlipped] = useState(false);
   const special = pull.card.rarity === "epica" || pull.card.rarity === "legendaria";
 
@@ -460,7 +466,7 @@ function RevealCard({ pull, onNext, reduce }: { pull: Pull; onNext: () => void; 
         type="button"
         onClick={onNext}
         className="relative block cursor-pointer border-0 bg-transparent p-0"
-        aria-label={`${pull.card.name ?? pull.card.login}, ${RARITIES[pull.card.rarity].label}. Siguiente cromo`}
+        aria-label={t.pack.nextAria(pull.card.name ?? pull.card.login, t.rarity[pull.card.rarity].label)}
       >
         <Cromo card={pull.card} width={280} faceDown={!flipped} />
       </button>
@@ -475,7 +481,7 @@ function RevealCard({ pull, onNext, reduce }: { pull: Pull; onNext: () => void; 
             <span
               className={`block rounded-full border-2 border-ink px-4 py-1.5 font-mono text-sm font-bold shadow-[3px_3px_0_#111] ${pull.isNew ? "bg-sun text-ink" : "bg-white text-ink"}`}
             >
-              {pull.isNew ? "¡NUEVO!" : "REPETIDO"}
+              {pull.isNew ? t.pack.newTag : t.pack.repeatedTag}
             </span>
           </motion.div>
         )}
@@ -487,7 +493,7 @@ function RevealCard({ pull, onNext, reduce }: { pull: Pull; onNext: () => void; 
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          {RARITIES[pull.card.rarity].symbol} {RARITIES[pull.card.rarity].label.toUpperCase()}
+          {RARITIES[pull.card.rarity].symbol} {t.rarity[pull.card.rarity].label.toUpperCase()}
         </motion.p>
       )}
     </motion.div>
@@ -576,10 +582,11 @@ function SwipeHint({ progress }: { progress: number }) {
 
 /** Las 5 cartas salen del sobre y se abren en abanico antes de revelarse. */
 function FanOut({ pulls }: { pulls: Pull[] }) {
+  const t = useT();
   const n = pulls.length;
   return (
     <div className="relative z-10 grid h-[460px] w-full place-items-center" aria-live="polite">
-      <span className="sr-only">Salen {n} cromos del sobre</span>
+      <span className="sr-only">{t.pack.leaving(n)}</span>
       {pulls.map((p, i) => {
         const mid = (n - 1) / 2;
         const angle = (i - mid) * 13;

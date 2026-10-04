@@ -6,23 +6,24 @@ import { Cromo } from "@/components/Cromo";
 import { cardByLogin } from "@/lib/data";
 import { RARITIES } from "@/lib/cards";
 import { getUser } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 
 type Params = { login: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { login } = await params;
-  const card = await cardByLogin(login);
-  if (!card) return { title: "Cromo no encontrado" };
+  const [card, { t }] = await Promise.all([cardByLogin(login), getT()]);
+  if (!card) return { title: t.cardPage.notFound };
   const name = card.name ?? card.login;
   return {
     title: `${name} (@${card.login})`,
-    description: `¿Quién tiene a ${name}? Cromo ${RARITIES[card.rarity].label.toLowerCase()} en Cromos de devs.`,
+    description: t.cardPage.description(name, t.rarity[card.rarity].label),
   };
 }
 
 export default async function CardPage({ params }: { params: Promise<Params> }) {
   const { login } = await params;
-  const [card, { user }] = await Promise.all([cardByLogin(login), getUser()]);
+  const [card, { user }, { t }] = await Promise.all([cardByLogin(login), getUser(), getT()]);
   if (!card) notFound();
   const name = card.name ?? card.login;
 
@@ -39,20 +40,20 @@ export default async function CardPage({ params }: { params: Promise<Params> }) 
         </div>
         <div>
           <p className="font-mono text-sm font-bold uppercase text-sun">
-            {RARITIES[card.rarity].symbol} Cromo {RARITIES[card.rarity].label.toLowerCase()}
+            {RARITIES[card.rarity].symbol} {t.cardPage.kicker(t.rarity[card.rarity].label)}
           </p>
-          <h1 className="display mt-3 text-6xl md:text-7xl">¿Quién tiene a {name}?</h1>
+          <h1 className="display mt-3 text-6xl md:text-7xl">{t.cardPage.whoHas(name)}</h1>
           <p className="mt-6 flex items-baseline gap-3">
             <span className="font-mono text-7xl font-bold leading-none text-sun">{card.owners}</span>
-            <span className="text-xl font-bold">{card.owners === 1 ? "persona" : "personas"} en su álbum</span>
+            <span className="text-xl font-bold">{t.cardPage.inAlbum(card.owners)}</span>
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             {user ? (
               <Link href="/sobre" className="btn btn-sun">
-                Abrir mi sobre de hoy
+                {t.cardPage.openMyPack}
               </Link>
             ) : (
-              <SignInLink className="btn btn-sun">Consigue tu cromo</SignInLink>
+              <SignInLink className="btn btn-sun">{t.cardPage.getYours}</SignInLink>
             )}
             <a
               href={`https://github.com/${card.login}`}
@@ -60,7 +61,7 @@ export default async function CardPage({ params }: { params: Promise<Params> }) 
               rel="noopener noreferrer"
               className="btn btn-ghost border-white text-white"
             >
-              Ver su GitHub
+              {t.cardPage.seeGithub}
             </a>
           </div>
         </div>

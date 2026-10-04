@@ -3,14 +3,18 @@ import { redirect } from "next/navigation";
 import { PackOpener } from "@/components/PackOpener";
 import { openPack } from "@/app/actions";
 import { getUser } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { nextPackAt, todayUtc } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Sobre del día" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t.pack.title };
+}
 
 export default async function SobrePage() {
-  const { supabase, user } = await getUser();
+  const [{ supabase, user }, { t }] = await Promise.all([getUser(), getT()]);
   const demo = !supabase;
-  if (supabase && !user) redirect("/?error=" + encodeURIComponent("Entra con GitHub para abrir sobres."));
+  if (supabase && !user) redirect("/?error=needLogin");
 
   let openedToday = false;
   if (supabase && user) {
@@ -25,7 +29,7 @@ export default async function SobrePage() {
 
   return (
     <main className="min-h-[calc(100dvh-68px)] bg-ink pb-20 md:pb-0">
-      <h1 className="sr-only">Sobre del día</h1>
+      <h1 className="sr-only">{t.pack.title}</h1>
       <PackOpener
         demo={demo}
         openedToday={openedToday}

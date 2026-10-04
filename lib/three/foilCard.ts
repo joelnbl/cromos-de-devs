@@ -8,6 +8,7 @@
 
 import * as THREE from "three";
 import { RARITIES, cardNumber, formatCount, langStyle, yearsOnGithub, type Card, type Rarity } from "@/lib/cards";
+import type { Dict } from "@/lib/i18n/dict";
 
 export const CARD_W = 2.6;
 export const CARD_H = (CARD_W * 88) / 63;
@@ -80,7 +81,7 @@ function fitText(g: CanvasRenderingContext2D, text: string, max: number) {
 }
 
 /** Dibuja la cara de la carta. Usa la foto real de GitHub si se puede cargar. */
-export async function drawCardFace(card: Card): Promise<HTMLCanvasElement> {
+export async function drawCardFace(card: Card, t: Dict): Promise<HTMLCanvasElement> {
   const { display, mono } = fonts();
   await Promise.all([
     document.fonts.load(`900 40px ${display}`).catch(() => null),
@@ -197,7 +198,7 @@ export async function drawCardFace(card: Card): Promise<HTMLCanvasElement> {
   g.textAlign = "center";
   g.textBaseline = "middle";
   g.fillText(numText, 10 * s + nw / 2, 21.5 * s);
-  const label = `${RARITIES[r].symbol} ${RARITIES[r].label.toUpperCase()}`;
+  const label = `${RARITIES[r].symbol} ${t.rarity[r].label.toUpperCase()}`;
   g.font = `700 ${9 * s}px ${mono}`;
   const lw = g.measureText(label).width + 16 * s;
   rr(g, TW - 10 * s - lw, 10 * s, lw, 22 * s, 11 * s);
@@ -232,10 +233,10 @@ export async function drawCardFace(card: Card): Promise<HTMLCanvasElement> {
   g.fillStyle = lang.color;
   g.fill();
   g.fillStyle = L.ink;
-  g.fillText(lang.name, x + 11 * s, y);
+  g.fillText(card.top_language ?? t.card.polyglot, x + 11 * s, y);
   g.textAlign = "right";
   g.fillStyle = L.soft;
-  g.fillText(`NV ${yearsOnGithub(card.github_created_at)}${card.country ? " · " + card.country : ""}`, TW - px, y);
+  g.fillText(`${t.card.level} ${yearsOnGithub(card.github_created_at)}${card.country ? " · " + card.country : ""}`, TW - px, y);
   y += 22 * s;
 
   // Estadísticas
@@ -243,9 +244,9 @@ export async function drawCardFace(card: Card): Promise<HTMLCanvasElement> {
   const shh = 38 * s;
   (
     [
-      ["ESTRELLAS", formatCount(card.stars)],
-      ["FANS", formatCount(card.followers)],
-      ["COMMITS", formatCount(card.commits)],
+      [t.card.stars, formatCount(card.stars)],
+      [t.card.fans, formatCount(card.followers)],
+      [t.card.commits, formatCount(card.commits)],
     ] as const
   ).forEach(([lab, val], i) => {
     const bx = px + i * (sw + 6 * s);
