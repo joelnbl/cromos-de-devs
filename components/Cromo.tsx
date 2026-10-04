@@ -50,7 +50,7 @@ export function Cromo({ card, width, interactive = true, faceDown = false, eager
   const rarity = { ...RARITIES[card.rarity], label: t.rarity[card.rarity].label };
   const level = yearsOnGithub(card.github_created_at);
   const displayName = card.name?.trim() || card.login;
-  const topRepo = card.top_repos[0];
+  const topRepo = card.top_repos?.[0];
 
   const onMove = useCallback(
     (e: PointerEvent<HTMLDivElement>) => {

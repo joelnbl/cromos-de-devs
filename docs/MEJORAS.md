@@ -16,7 +16,6 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 
 ## Abiertos
 
-- **T-06 Estados de carga, vacío y error** en todas las páginas.
 
 ## Pendiente de decidir
 
@@ -36,3 +35,4 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 - **T-05** Portada «En vivo» con datos reales: devs, cambios hechos y los más coleccionados; oculta si hay pocos datos (Sonnet). ✔
 - **T-08** Sello CREADOR también en la carta 3D y en la imagen OG (Sonnet). ✔
 - **T-09** Mi cromo: compartir a ancho completo (Sonnet). ✔
+- **T-06** Páginas de error con «Reintentar» (error y global-error) y lecturas a prueba de datos nulos (Sonnet). ✔

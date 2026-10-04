@@ -103,9 +103,9 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
               <div>
                 <dt className="font-mono text-xs font-extrabold uppercase tracking-wider">{t.myCard.reposLabel}</dt>
                 <dd className="mt-1">
-                  {card.top_repos.length ? (
+                  {(card.top_repos ?? []).length ? (
                     <ul className="space-y-1 font-mono text-sm">
-                      {card.top_repos.slice(0, 3).map((r) => (
+                      {(card.top_repos ?? []).slice(0, 3).map((r) => (
                         <li key={r.name} className="flex justify-between gap-3">
                           <span className="min-w-0 truncate font-bold">{r.name}</span>
                           <span>★ {formatCount(r.stars)}</span>

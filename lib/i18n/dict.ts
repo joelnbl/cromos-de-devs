@@ -352,6 +352,12 @@ const es = {
     getYours: "Consigue tu cromo",
     seeGithub: "Ver su GitHub",
   },
+  errorPage: {
+    title: "Algo ha fallado",
+    body: "No es culpa tuya. Prueba otra vez y, si sigue igual, vuelve en un rato.",
+    retry: "Reintentar",
+    home: "Volver a la portada",
+  },
   notFound: {
     title: "Este cromo no existe",
     body: "Puede que esa persona aún no se haya registrado.",
@@ -726,6 +732,12 @@ const en: Dict = {
     openMyPack: "Open my pack for today",
     getYours: "Get your card",
     seeGithub: "See their GitHub",
+  },
+  errorPage: {
+    title: "Something broke",
+    body: "It's not your fault. Try again and, if it keeps happening, come back in a bit.",
+    retry: "Try again",
+    home: "Back to the home page",
   },
   notFound: {
     title: "This card doesn't exist",
