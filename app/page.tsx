@@ -180,6 +180,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
               @joelnbl
             </a>
           </span>
+          <Link href="/ranking" className="underline underline-offset-2">
+            {t.nav.ranking}
+          </Link>
           <span>{t.home.privacy}</span>
         </footer>
       </section>

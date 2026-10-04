@@ -12,6 +12,8 @@ const LINKS = [
   { href: "/mi-cromo", key: "myCard", Icon: CromoIcon },
 ] as const;
 
+const TOP_ONLY = [{ href: "/ranking", key: "ranking" }] as const;
+
 export function NavLinks({ variant }: { variant: "top" | "bottom" }) {
   const pathname = usePathname();
   const t = useT();
@@ -19,7 +21,7 @@ export function NavLinks({ variant }: { variant: "top" | "bottom" }) {
   if (variant === "top") {
     return (
       <nav aria-label={t.common.navMain} className="hidden items-center gap-1 md:flex">
-        {LINKS.map(({ href, key }) => {
+        {[...LINKS, ...TOP_ONLY].map(({ href, key }) => {
           const active = pathname.startsWith(href);
           return (
             <Link

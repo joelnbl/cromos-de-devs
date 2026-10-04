@@ -17,6 +17,14 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 ## Abiertos
 
 
+## Esperan a poder aplicar migraciones (Supabase bloqueado desde este entorno)
+
+- **T-10 Invitaciones con recompensa** (tabla de invitaciones; sin correos, solo enlace con código).
+- **T-13 Evento del día** (p. ej. «hoy más legendarias»), tabla `events` y ajuste de `open_daily_pack`.
+- **T-14 Avisos en la app** (tabla de notificaciones y disparadores al cerrar cambios).
+- **T-16 Insignias** (racha de 7, 10 cambios…).
+- **T-11 Álbum público de otros devs**: requiere decidir si la colección deja de ser privada. No se hace sin el dueño.
+
 ## Pendiente de decidir
 
 - **S-03 Cuentas múltiples**: alguien puede crear cuentas de GitHub nuevas para pasarse cartas. Opción: exigir antigüedad mínima de la cuenta de GitHub. Sin hacer por ahora (proyecto pequeño).
@@ -36,3 +44,6 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 - **T-08** Sello CREADOR también en la carta 3D y en la imagen OG (Sonnet). ✔
 - **T-09** Mi cromo: compartir a ancho completo (Sonnet). ✔
 - **T-06** Páginas de error con «Reintentar» (error y global-error) y lecturas a prueba de datos nulos (Sonnet). ✔
+- **T-12** Compartir el sobre: página `/s?c=…` con los cromos e imagen OG propia; el resumen del sobre comparte ese enlace (Sonnet). ✔
+- **T-18** Imagen OG de cada cambio y regalo en `/t/[código]` (Sonnet). ✔
+- **T-15** Ranking público `/ranking` con podio, filtros por país y lenguaje (Sonnet). ✔

@@ -30,7 +30,7 @@ const es = {
     soundOff: "Silenciar sonidos",
     soundOn: "Activar sonidos",
   },
-  nav: { pack: "Sobre", album: "Álbum", trades: "Cambios", myCard: "Mi cromo" },
+  nav: { pack: "Sobre", album: "Álbum", trades: "Cambios", myCard: "Mi cromo", ranking: "Ranking" },
   home: {
     season: "Temporada 1 · Gratis",
     h1a: "Colecciona devs.",
@@ -144,6 +144,24 @@ const es = {
     newShort: "NUEVO",
     leaving: (n: number) => `Salen ${n} cromos del sobre`,
     nextAria: (name: string, rarity: string) => `${name}, ${rarity}. Siguiente cromo`,
+  },
+  ranking: {
+    metaTitle: "Ranking: los cromos más coleccionados",
+    metaDescription: "¿Quién está en más álbumes? Los 50 cromos de devs que más personas tienen, con su rareza, país y lenguaje.",
+    kicker: "Los más coleccionados",
+    title: "¿Quién está en más álbumes?",
+    allFilter: "Todos",
+    countriesAria: "Filtrar por país",
+    languagesAria: "Filtrar por lenguaje",
+    people: (n: number): string => (n === 1 ? "persona" : "personas"),
+    place: (n: number): string => `Puesto ${n}`,
+    podiumAria: "Los tres cromos más coleccionados",
+    listAria: "Del puesto 4 al 50",
+    empty: "Todavía nadie tiene cromos en su álbum",
+    emptyBody: "Abre tu primer sobre y empieza la colección: aquí saldrán los más coleccionados.",
+    emptyCta: "Abrir un sobre",
+    noResults: "Ningún cromo con ese filtro.",
+    clearFilters: "Quitar filtros",
   },
   album: {
     title: "Mi álbum",
@@ -388,6 +406,14 @@ const es = {
     serverKey: "Falta configurar el servidor (clave de servicio de Supabase).",
     githubRead: "Entraste, pero no pudimos leer tu GitHub. Inténtalo de nuevo.",
   },
+  share2: {
+    title: "Me salió esto en el sobre de hoy",
+    description: "Mira los cromos de devs que me han salido. ¿Quién te sale a ti?",
+    cta: "Consigue tu cromo",
+    open: "Abrir mi sobre",
+    empty: "Aquí no hay cromos todavía.",
+    ogAlt: "Cromos del sobre de hoy: ¿quién te sale a ti?",
+  },
 };
 
 export type Dict = typeof es;
@@ -413,7 +439,7 @@ const en: Dict = {
     soundOff: "Mute sounds",
     soundOn: "Turn sounds on",
   },
-  nav: { pack: "Pack", album: "Album", trades: "Trades", myCard: "My card" },
+  nav: { pack: "Pack", album: "Album", trades: "Trades", myCard: "My card", ranking: "Ranking" },
   home: {
     season: "Season 1 · Free",
     h1a: "Collect devs.",
@@ -525,6 +551,24 @@ const en: Dict = {
     newShort: "NEW",
     leaving: (n: number) => `${n} cards come out of the pack`,
     nextAria: (name: string, rarity: string) => `${name}, ${rarity}. Next card`,
+  },
+  ranking: {
+    metaTitle: "Ranking: the most collected cards",
+    metaDescription: "Who is in the most albums? The 50 dev cards that the most people have, with their rarity, country and language.",
+    kicker: "Most collected",
+    title: "Who is in the most albums?",
+    allFilter: "All",
+    countriesAria: "Filter by country",
+    languagesAria: "Filter by language",
+    people: (n: number): string => (n === 1 ? "person" : "people"),
+    place: (n: number): string => `Place ${n}`,
+    podiumAria: "The three most collected cards",
+    listAria: "Places 4 to 50",
+    empty: "Nobody has cards in their album yet",
+    emptyBody: "Open your first pack and start collecting: the most collected cards will show up here.",
+    emptyCta: "Open a pack",
+    noResults: "No cards match that filter.",
+    clearFilters: "Clear filters",
   },
   album: {
     title: "My album",
@@ -768,6 +812,14 @@ const en: Dict = {
     loginProvider: "GitHub or Supabase rejected the sign-in.",
     serverKey: "The server isn't fully set up (Supabase service key).",
     githubRead: "You're signed in, but we couldn't read your GitHub. Please try again.",
+  },
+  share2: {
+    title: "I got this in today's pack",
+    description: "See the dev cards I pulled. Who do you get?",
+    cta: "Get your card",
+    open: "Open my pack",
+    empty: "No cards here yet.",
+    ogAlt: "Cards from today's pack: who do you get?",
   },
 };
 

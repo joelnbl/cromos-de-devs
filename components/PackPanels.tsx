@@ -144,6 +144,7 @@ export function PackSummary({ pulls, info, demo, nextAt, onDemoAgain }: {
   const best = [...pulls].sort((a, b) => RARITY_ORDER.indexOf(b.card.rarity) - RARITY_ORDER.indexOf(a.card.rarity))[0];
   const bragText = best ? t.pack.bragText(best.card.name ?? best.card.login, t.rarity[best.card.rarity].label) : "";
   const enc = encodeURIComponent;
+  const shareUrl = `${info.site}/s?c=${pulls.map((p) => p.card.id).join(",")}`;
   const pct = (n: number) => (info.total ? (n / info.total) * 100 : 0);
 
   return (
@@ -223,7 +224,7 @@ export function PackSummary({ pulls, info, demo, nextAt, onDemoAgain }: {
           <p className="text-center font-extrabold text-white/80">{t.pack.brag}</p>
           <div className="grid grid-cols-2 gap-2.5">
             <a
-              href={`https://x.com/intent/post?text=${enc(bragText)}&url=${enc(`${info.site}/c/${best.card.login}`)}`}
+              href={`https://x.com/intent/post?text=${enc(bragText)}&url=${enc(shareUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-13 items-center justify-center rounded-full bg-white font-black text-ink no-underline"
@@ -231,7 +232,7 @@ export function PackSummary({ pulls, info, demo, nextAt, onDemoAgain }: {
               {t.pack.postX}
             </a>
             <a
-              href={`https://wa.me/?text=${enc(`${bragText} ${info.site}/c/${best.card.login}`)}`}
+              href={`https://wa.me/?text=${enc(`${bragText} ${shareUrl}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-13 items-center justify-center rounded-full bg-[#25d366] font-black text-[#0b2e17] no-underline"

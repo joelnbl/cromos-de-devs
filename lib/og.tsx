@@ -5,7 +5,7 @@ import { RARITIES, cardNumber, formatCount, isCreator, langStyle, type Card } fr
 
 export const OG_SIZE = { width: 1200, height: 630 };
 
-const LOOK: Record<Card["rarity"], { ring: string; bg: string; ink: string; soft: string; line: string; glow: string }> = {
+export const LOOK: Record<Card["rarity"], { ring: string; bg: string; ink: string; soft: string; line: string; glow: string }> = {
   comun: { ring: "linear-gradient(135deg, #6B4A2B, #E3B486 45%, #7A5230 75%, #B9824F)", bg: "linear-gradient(180deg, #1C1814, #110F0C)", ink: "#F3E9DD", soft: "#B9A894", line: "rgba(255,255,255,0.12)", glow: "rgba(0,0,0,0)" },
   rara: { ring: "linear-gradient(135deg, #7D868F, #FFFFFF 45%, #8E98A2 75%, #DDE3E8)", bg: "linear-gradient(180deg, #151A20, #0D1015)", ink: "#EEF4FA", soft: "#9FB0C2", line: "rgba(255,255,255,0.12)", glow: "rgba(120,190,255,0.35)" },
   epica: { ring: "linear-gradient(135deg, #8A6A12, #FFF3C0 45%, #B8860B 75%, #F2D36B)", bg: "linear-gradient(180deg, #1D1426, #110C17)", ink: "#FFF6DE", soft: "#C9B8D9", line: "rgba(255,255,255,0.12)", glow: "rgba(160,100,255,0.5)" },
@@ -14,7 +14,7 @@ const LOOK: Record<Card["rarity"], { ring: string; bg: string; ink: string; soft
 };
 
 /** Las fotos de ejemplo viven en /public: se incrustan para no depender de la red. */
-function avatarSrc(url: string | null | undefined) {
+export function avatarSrc(url: string | null | undefined) {
   if (!url) return null;
   if (url.startsWith("https://avatars.githubusercontent.com/")) return url;
   // Solo fotos de ejemplo de /public/demo, sin rutas raras
@@ -150,5 +150,34 @@ export function cardOgImage(card: Card | null) {
       </div>
     ),
     OG_SIZE,
+  );
+}
+
+/** Versión mini de la carta para imágenes con varias cartas. `w` es el ancho en px. */
+export function MiniCardOg({ card, w }: { card: Card; w: number }) {
+  const look = LOOK[card.rarity];
+  const lang = langStyle(card.top_language);
+  const avatar = avatarSrc(card.avatar_url);
+  const name = card.name ?? card.login;
+  const h = Math.round(w * 1.4);
+  const photo = Math.round(w * 0.5);
+  const initials = name.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <div style={{ display: "flex", width: w, height: h, padding: 5, borderRadius: 16, background: look.ring, boxShadow: "7px 7px 0 #111111" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", width: "100%", height: "100%", borderRadius: 11, background: look.bg, color: look.ink, padding: "12px 8px" }}>
+        <span style={{ display: "flex", fontSize: 12, color: look.soft, fontFamily: "monospace" }}>#{cardNumber(card.id)}</span>
+        {avatar ? (
+          <img alt="" src={avatar} width={photo} height={photo} style={{ borderRadius: 14, background: lang.color }} />
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: photo, height: photo, borderRadius: 14, background: lang.color, color: "#FFFFFF", fontSize: 30, fontWeight: 700 }}>
+            {initials}
+          </div>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <span style={{ display: "flex", fontSize: 18, fontWeight: 700, textAlign: "center" }}>{name.length > 11 ? name.slice(0, 10) + "…" : name}</span>
+          <span style={{ display: "flex", fontSize: 12, color: look.soft, fontFamily: "monospace", marginTop: 3 }}>{RARITIES[card.rarity].label.toUpperCase()}</span>
+        </div>
+      </div>
+    </div>
   );
 }

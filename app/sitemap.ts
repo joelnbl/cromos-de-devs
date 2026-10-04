@@ -9,7 +9,9 @@ const MAX_CARDS = 5000;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
-  const entries: MetadataRoute.Sitemap = [{ url: `${base}/`, changeFrequency: "daily", priority: 1 }];
+  const entries: MetadataRoute.Sitemap = [{ url: `${base}/`, changeFrequency: "daily", priority: 1 },
+    { url: `${base}/ranking`, changeFrequency: "daily", priority: 0.7 },
+  ];
   if (!isSupabaseConfigured) return entries;
 
   // Cliente anónimo sin cookies: así el sitemap se puede cachear y revalidar cada hora.
