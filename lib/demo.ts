@@ -3,10 +3,11 @@ import type { Card } from "./cards";
 /**
  * Cromos de ejemplo para el modo demo y la portada. Personas inventadas:
  * nunca se muestran datos de alguien que no se haya registrado.
+ * Retratos ilustrados generados con DiceBear, estilo «Notionists» de Zoish (CC0 1.0).
  */
 export const DEMO_CARDS: Card[] = [
   {
-    id: 1, login: "anaruiz", name: "Ana Ruiz", avatar_url: null, bio: null, country: "ES",
+    id: 1, login: "anaruiz", name: "Ana Ruiz", avatar_url: "/demo/anaruiz.svg", bio: null, country: "ES",
     top_language: "TypeScript", stars: 12400, followers: 2300, public_repos: 64, commits: 3100,
     top_repos: [
       { name: "ui-kit", description: "Componentes accesibles", stars: 9800, language: "TypeScript" },
@@ -15,7 +16,7 @@ export const DEMO_CARDS: Card[] = [
     github_created_at: "2012-03-01T00:00:00Z", rarity: "legendaria", owners: 0,
   },
   {
-    id: 42, login: "dparedes", name: "Diego Paredes", avatar_url: null, bio: null, country: "VE",
+    id: 42, login: "dparedes", name: "Diego Paredes", avatar_url: "/demo/dparedes.svg", bio: null, country: "VE",
     top_language: "Rust", stars: 840, followers: 310, public_repos: 38, commits: 1900,
     top_repos: [
       { name: "fast-csv", description: "Lector de CSV muy rápido", stars: 610, language: "Rust" },
@@ -24,7 +25,7 @@ export const DEMO_CARDS: Card[] = [
     github_created_at: "2016-06-01T00:00:00Z", rarity: "epica", owners: 0,
   },
   {
-    id: 217, login: "luciamora", name: "Lucía Mora", avatar_url: null, bio: null, country: "MX",
+    id: 217, login: "luciamora", name: "Lucía Mora", avatar_url: "/demo/luciamora.svg", bio: null, country: "MX",
     top_language: "Python", stars: 96, followers: 54, public_repos: 22, commits: 1200,
     top_repos: [
       { name: "tacos-ml", description: "Clasifica tacos con visión", stars: 71, language: "Python" },
@@ -33,31 +34,31 @@ export const DEMO_CARDS: Card[] = [
     github_created_at: "2019-01-01T00:00:00Z", rarity: "rara", owners: 0,
   },
   {
-    id: 388, login: "tomasgil", name: "Tomás Gil", avatar_url: null, bio: null, country: "AR",
+    id: 388, login: "tomasgil", name: "Tomás Gil", avatar_url: "/demo/tomasgil.svg", bio: null, country: "AR",
     top_language: "Go", stars: 12, followers: 9, public_repos: 11, commits: 640,
     top_repos: [{ name: "mate-timer", description: "Avisa cuando toca cebar", stars: 8, language: "Go" }],
     github_created_at: "2021-09-01T00:00:00Z", rarity: "comun", owners: 0,
   },
   {
-    id: 120, login: "vrios", name: "Valentina Ríos", avatar_url: null, bio: null, country: "CO",
+    id: 120, login: "vrios", name: "Valentina Ríos", avatar_url: "/demo/vrios.svg", bio: null, country: "CO",
     top_language: "Kotlin", stars: 61, followers: 41, public_repos: 17, commits: 880,
     top_repos: [{ name: "bus-bogota", description: "Horarios del bus offline", stars: 52, language: "Kotlin" }],
     github_created_at: "2018-02-01T00:00:00Z", rarity: "rara", owners: 0,
   },
   {
-    id: 77, login: "rmata", name: "Rafael Mata", avatar_url: null, bio: null, country: "VE",
+    id: 77, login: "rmata", name: "Rafael Mata", avatar_url: "/demo/rmata.svg", bio: null, country: "VE",
     top_language: "JavaScript", stars: 530, followers: 140, public_repos: 45, commits: 2300,
     top_repos: [{ name: "pixel-arepa", description: "Editor de pixel art", stars: 410, language: "JavaScript" }],
     github_created_at: "2014-02-01T00:00:00Z", rarity: "epica", owners: 0,
   },
   {
-    id: 301, login: "csilva", name: "Carla Silva", avatar_url: null, bio: null, country: "CL",
+    id: 301, login: "csilva", name: "Carla Silva", avatar_url: "/demo/csilva.svg", bio: null, country: "CL",
     top_language: "CSS", stars: 22, followers: 15, public_repos: 30, commits: 950,
     top_repos: [{ name: "centrar-div", description: "Por fin", stars: 20, language: "CSS" }],
     github_created_at: "2020-02-01T00:00:00Z", rarity: "comun", owners: 0,
   },
   {
-    id: 15, login: "jperez", name: "Jorge Pérez", avatar_url: null, bio: null, country: "PE",
+    id: 15, login: "jperez", name: "Jorge Pérez", avatar_url: "/demo/jperez.svg", bio: null, country: "PE",
     top_language: "Java", stars: 33, followers: 18, public_repos: 21, commits: 700,
     top_repos: [{ name: "ceviche-api", description: "Recetas en JSON", stars: 30, language: "Java" }],
     github_created_at: "2017-02-01T00:00:00Z", rarity: "comun", owners: 0,

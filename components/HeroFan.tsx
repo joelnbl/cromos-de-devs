@@ -12,7 +12,9 @@ const POSE = [
 
 export function HeroFan({ cards }: { cards: Card[] }) {
   const reduce = useReducedMotion();
+  const examples = cards.every((c) => c.avatar_url?.startsWith("/demo/"));
   return (
+    <figure className="m-0 flex flex-col items-center">
     <div className="flex h-[400px] items-center justify-center md:h-[460px]" aria-label="Cromos de ejemplo">
       {cards.slice(0, 3).map((card, i) => (
         <motion.div
@@ -27,5 +29,9 @@ export function HeroFan({ cards }: { cards: Card[] }) {
         </motion.div>
       ))}
     </div>
+    {examples && (
+      <figcaption className="font-mono text-xs font-bold text-ink/70">Cromos de ejemplo · personas inventadas</figcaption>
+    )}
+    </figure>
   );
 }

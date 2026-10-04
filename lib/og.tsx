@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { RARITIES, cardNumber, formatCount, langStyle, type Card } from "@/lib/cards";
 
@@ -10,7 +12,20 @@ const LOOK: Record<Card["rarity"], { ring: string; bg: string; ink: string; soft
   legendaria: { ring: "linear-gradient(135deg, #8A6A12, #FFFFFF 40%, #E8BE45 65%, #9C7414)", bg: "linear-gradient(170deg, #FFE9A3, #E8BE45 45%, #FFF3C0 60%, #C99A1C)", ink: "#2A1C00", soft: "#5C4610", line: "rgba(0,0,0,0.15)", glow: "rgba(255,216,77,0.7)" },
 };
 
+/** Las fotos de ejemplo viven en /public: se incrustan para no depender de la red. */
+function avatarSrc(url: string | null | undefined) {
+  if (!url) return null;
+  if (!url.startsWith("/")) return url;
+  try {
+    const svg = readFileSync(join(process.cwd(), "public", url));
+    return `data:image/svg+xml;base64,${svg.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
 export function cardOgImage(card: Card | null) {
+  const avatar = avatarSrc(card?.avatar_url);
   const rarity = card?.rarity ?? "epica";
   const look = LOOK[rarity];
   const name = card ? card.name ?? card.login : "Tu nombre";
@@ -64,8 +79,8 @@ export function cardOgImage(card: Card | null) {
               <span>{RARITIES[rarity].label.toUpperCase()}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 170, border: `1px solid ${look.line}`, borderRadius: 14 }}>
-              {card?.avatar_url ? (
-                <img alt="" src={card.avatar_url} width={118} height={118} style={{ borderRadius: 22 }} />
+              {avatar ? (
+                <img alt="" src={avatar} width={118} height={118} style={{ borderRadius: 22, background: lang.color }} />
               ) : (
                 <div
                   style={{

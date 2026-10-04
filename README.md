@@ -71,3 +71,9 @@ pnpm dev
 - Privacidad: solo tienen cromo quienes se registran. Se usan datos públicos de GitHub.
 
 Comandos: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`.
+
+## Créditos
+
+Retratos de las personas de ejemplo (`public/demo/*.svg`): generados con [DiceBear](https://www.dicebear.com),
+estilo «Notionists» de [Zoish](https://heyzoish.gumroad.com/l/notionists), licencia CC0 1.0. Son personas
+inventadas; la web lo indica junto a los cromos de ejemplo.
