@@ -39,10 +39,11 @@ pnpm dev
    (y `http://localhost:3000/auth/callback` para desarrollo) a las Redirect URLs.
 6. **Variables de entorno** (en Vercel y en `.env.local`), ver `.env.example`:
    - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (o `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`)
    - `SUPABASE_SERVICE_ROLE_KEY` (solo servidor; se usa para crear tu cromo al entrar)
    - `NEXT_PUBLIC_SITE_URL` (opcional, para los enlaces de compartir)
-7. Despliega en Vercel importando el repo.
+7. Despliega en Vercel importando el repo. Si añades o cambias variables después, vuelve a desplegar:
+   las `NEXT_PUBLIC_*` se fijan al compilar.
 
 ## Cómo está hecho
 
