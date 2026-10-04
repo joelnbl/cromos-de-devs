@@ -478,7 +478,7 @@ const en: Dict = {
     inviteTile: "Invite your dev friends",
     inviteTileSub: "Every dev who joins is a new card in the packs",
     selectionTile: (name: string) => `Complete Team ${name}`,
-    selectionTileSub: (n: number) => `${n} missing: ask for them in a trade`,
+    selectionTileSub: (n: number): string => (n === 1 ? "1 missing: ask for it in a trade" : `${n} missing: ask for them in a trade`),
     copied: "Link copied",
     seeAlbum: "See my album",
     tradeDupes: "Trade duplicates",

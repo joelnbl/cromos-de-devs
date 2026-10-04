@@ -87,7 +87,7 @@ export function HeroFan({ cards }: { cards: Card[] }) {
             onPointerEnter={(e) => e.pointerType === "mouse" && sfx.brush()}
           >
             <div data-fan={i}>
-              <Cromo card={card} width={i === 1 ? 250 : 220} className="max-sm:[--w:150px]!" />
+              <Cromo card={card} eager width={i === 1 ? 250 : 220} className="max-sm:[--w:150px]!" />
             </div>
           </motion.div>
         ))}

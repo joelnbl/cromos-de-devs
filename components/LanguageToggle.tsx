@@ -30,7 +30,7 @@ export function LanguageToggle() {
           lang={l}
           onClick={() => choose(l)}
           aria-pressed={locale === l}
-          className={`min-h-9 min-w-10 rounded-full px-2 font-mono text-xs font-bold ${locale === l ? "bg-ink text-white" : "text-ink"}`}
+          className={`min-h-11 min-w-11 rounded-full px-2 font-mono text-xs font-bold ${locale === l ? "bg-ink text-white" : "text-ink"}`}
         >
           {l.toUpperCase()}
         </button>

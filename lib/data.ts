@@ -18,6 +18,8 @@ export async function featuredCards(limit = 3): Promise<Card[]> {
 export async function cardByLogin(login: string): Promise<Card | null> {
   const supabase = await createClient();
   if (!supabase) return DEMO_CARDS.find((c) => c.login === login) ?? null;
+  // Logins de GitHub: letras, números y guiones. Así % y _ nunca actúan como comodines.
+  if (!/^[A-Za-z0-9-]{1,39}$/.test(login)) return null;
   const { data } = await supabase.from("cards").select(CARD_COLUMNS).ilike("login", login).maybeSingle();
   return (data as Card | null) ?? null;
 }

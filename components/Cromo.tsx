@@ -12,11 +12,24 @@ type Props = {
   interactive?: boolean;
   /** Muestra el reverso (para el sobre). */
   faceDown?: boolean;
+  /** Carga el avatar sin esperar (cartas de la primera pantalla). */
+  eager?: boolean;
   className?: string;
   style?: CSSProperties;
 };
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+/** Pide a GitHub un avatar del tamaño que se ve (el avatar mide ~43% del ancho de la carta, x2 por pantallas retina). */
+function avatarSrc(url: string) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.endsWith("githubusercontent.com") && !u.searchParams.has("s")) u.searchParams.set("s", "280");
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
 
 export function initialsOf(name: string) {
   return name
@@ -27,7 +40,7 @@ export function initialsOf(name: string) {
     .toUpperCase();
 }
 
-export function Cromo({ card, width, interactive = true, faceDown = false, className, style }: Props) {
+export function Cromo({ card, width, interactive = true, faceDown = false, eager = false, className, style }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const frame = useRef<number | null>(null);
 
@@ -90,7 +103,17 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
               <div className="cromo-sparks" />
               <span className="cromo-halo" />
               {card.avatar_url ? (
-                <img className="cromo-avatar" src={card.avatar_url} alt="" draggable={false} crossOrigin="anonymous" />
+                <img
+                  className="cromo-avatar"
+                  src={avatarSrc(card.avatar_url)}
+                  alt=""
+                  width={140}
+                  height={140}
+                  loading={eager ? "eager" : "lazy"}
+                  decoding="async"
+                  draggable={false}
+                  crossOrigin="anonymous"
+                />
               ) : (
                 <div className="cromo-avatar cromo-avatar-initials">{initialsOf(displayName)}</div>
               )}

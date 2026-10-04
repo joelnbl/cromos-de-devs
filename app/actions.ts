@@ -52,7 +52,7 @@ export async function createTrade(formData: FormData) {
   if (!supabase || !user) redirect("/cambios");
   const offer = Number(formData.get("offer"));
   const want = Number(formData.get("want"));
-  if (!offer || !want) redirect("/cambios?error=pickBoth");
+  if (!isId(offer) || !isId(want)) redirect("/cambios?error=pickBoth");
 
   const { data, error } = await supabase.rpc("create_trade", { p_offer: offer, p_want: want });
   if (error) redirect(`/cambios?error=${codeOf(error)}`);
@@ -64,7 +64,7 @@ export async function createGift(formData: FormData) {
   const { supabase, user } = await getUser();
   if (!supabase || !user) redirect("/cambios");
   const offer = Number(formData.get("offer"));
-  if (!offer) redirect("/cambios?error=pickBoth");
+  if (!isId(offer)) redirect("/cambios?error=pickBoth");
 
   const { data, error } = await supabase.rpc("create_gift", { p_offer: offer });
   if (error) redirect(`/cambios?error=${codeOf(error)}`);
@@ -72,8 +72,12 @@ export async function createGift(formData: FormData) {
   redirect(`/t/${data as string}?nuevo=1`);
 }
 
+const CODE = /^[a-f0-9]{12}$/;
+const isId = (n: number) => Number.isInteger(n) && n > 0;
+
 export async function acceptTrade(formData: FormData) {
   const code = String(formData.get("code") ?? "");
+  if (!CODE.test(code)) redirect("/cambios");
   const { supabase, user } = await getUser();
   if (!supabase || !user) redirect(`/t/${code}`);
 
@@ -88,6 +92,7 @@ export async function acceptTrade(formData: FormData) {
 
 export async function cancelTrade(formData: FormData) {
   const code = String(formData.get("code") ?? "");
+  if (!CODE.test(code)) redirect("/cambios");
   const { supabase, user } = await getUser();
   if (!supabase || !user) redirect("/cambios");
   await supabase.rpc("cancel_trade", { p_code: code });

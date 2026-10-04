@@ -16,7 +16,9 @@ const LOOK: Record<Card["rarity"], { ring: string; bg: string; ink: string; soft
 /** Las fotos de ejemplo viven en /public: se incrustan para no depender de la red. */
 function avatarSrc(url: string | null | undefined) {
   if (!url) return null;
-  if (!url.startsWith("/")) return url;
+  if (url.startsWith("https://avatars.githubusercontent.com/")) return url;
+  // Solo fotos de ejemplo de /public/demo, sin rutas raras
+  if (!/^\/demo\/[a-z0-9-]+\.svg$/.test(url)) return null;
   try {
     const svg = readFileSync(join(process.cwd(), "public", url));
     return `data:image/svg+xml;base64,${svg.toString("base64")}`;

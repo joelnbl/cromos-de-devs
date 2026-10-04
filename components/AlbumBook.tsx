@@ -157,7 +157,7 @@ export function AlbumBook({
                   <motion.li
                     key={card.id}
                     className="relative"
-                    initial={reduce ? false : { opacity: 0, y: 14 }}
+                    initial={reduce || si * 6 + i >= 6 ? false : { opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: (si * 6 + i) * 0.035 }}
                   >
@@ -170,7 +170,7 @@ export function AlbumBook({
                         style={{ rotate: `${tilt(card.id)}deg` }}
                         aria-label={t.album.seeAria(card.name ?? card.login)}
                       >
-                        <Cromo card={card} interactive={false} className="album-slot" />
+                        <Cromo card={card} interactive={false} eager={si === 0} className="album-slot" />
                         {qty > 1 && (
                           <span className="absolute -right-2 -top-2 z-[2] rounded-full border-2 border-ink bg-sun px-2 py-0.5 font-mono text-[13px] font-extrabold">
                             ×{qty}
@@ -276,7 +276,7 @@ export function AlbumBook({
                 exit={{ scale: 0.6, opacity: 0 }}
                 transition={{ type: "spring", stiffness: 220, damping: 20 }}
               >
-                <Cromo card={open} className="[--w:min(72vw,320px)]" />
+                <Cromo card={open} eager className="[--w:min(72vw,320px)]" />
               </motion.div>
               {mine.length > 1 && (
                 <button type="button" onClick={() => step(1)} aria-label={t.album.nextCard} className="hidden h-12 w-12 place-items-center rounded-full border-2 border-white/50 text-white hover:bg-white/10 sm:grid">
