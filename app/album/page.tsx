@@ -9,7 +9,7 @@ import { getUser } from "@/lib/supabase/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
-  return { title: t.album.title };
+  return { title: t.album.title, robots: { index: false } };
 }
 
 type Search = { lenguaje?: string; pais?: string; ver?: string; q?: string; hoja?: string };

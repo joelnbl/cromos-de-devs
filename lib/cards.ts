@@ -53,6 +53,10 @@ export const PACK_ODDS: Record<Rarity, number> = { comun: 67.5, rara: 22, epica:
  */
 export const ICONO_LOGINS = new Set(["joelnbl", "midudev", "mouredev", "freddier", "rauchg"]);
 
+/** Dueño del proyecto: su cromo lleva el sello «Creador». */
+export const CREATOR_LOGINS = new Set(["joelnbl"]);
+export const isCreator = (login: string) => CREATOR_LOGINS.has(login.toLowerCase());
+
 export function computeRarity(stars: number, followers: number, login = ""): Rarity {
   if (ICONO_LOGINS.has(login.toLowerCase())) return "icono";
   if (stars >= 20000 || followers >= 5000) return "icono";

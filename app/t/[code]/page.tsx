@@ -13,7 +13,7 @@ import { errorText } from "@/lib/i18n/dict";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
-  return { title: t.trade.title };
+  return { title: t.trade.title, robots: { index: false } };
 }
 
 type Params = { code: string };

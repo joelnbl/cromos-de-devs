@@ -657,3 +657,25 @@ body {
     aspect-ratio: 63 / 88;
   }
 }
+
+/* Sello creador */
+.cromo-creator {
+  position: absolute;
+  z-index: 3;
+  left: 0.83em;
+  bottom: 0.83em;
+  display: flex;
+  align-items: center;
+  height: 1.9em;
+  padding: 0 0.75em;
+  border-radius: 0.4em;
+  border: 0.17em solid #ffd86e;
+  background: #111;
+  color: #ffd86e;
+  font-size: 0.7em;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  transform: rotate(-4deg);
+  box-shadow: 0 0.2em 0.5em rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}

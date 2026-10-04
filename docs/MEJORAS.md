@@ -16,10 +16,10 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 
 ## Abiertos
 
-- **T-04 Mi cromo** — rediseño de la página y sello «Creador» para @joelnbl.
+- **T-08 Sello Creador en 3D y en la imagen OG** — hoy solo sale en la carta normal.
+- **T-09 Mi cromo: botones de compartir** — en la columna estrecha de escritorio se aprietan.
 - **T-05 Portada con datos reales** — cuántos devs hay y los cromos más coleccionados (solo datos reales).
 - **T-06 Estados de carga, vacío y error** en todas las páginas.
-- **T-07 SEO** — metadatos por página, sitemap, robots, imagen OG de cada cromo.
 
 ## Pendiente de decidir
 
@@ -34,3 +34,5 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 - **T-01** Rendimiento (Sonnet): avatares de GitHub a 280 px, carga diferida, esqueletos de carga por página, caché larga de /demo, motion optimizado. ✔
 - **T-02** Auditoría (Haiku): plural en inglés y botones de idioma a 44 px. Los nombres propios («Cromos de devs», «WhatsApp») se quedan. ✔
 - **T-03** Seguridad (Sonnet): sin críticos. Migración `20261005160000_seguridad.sql` (quien ofrece debe seguir teniendo la repetida; límite de cambios a prueba de peticiones simultáneas), login de /c/ validado, OG solo con avatares de GitHub o /demo, códigos de cambio validados, cabeceras de seguridad. ✔
+- **T-04** Mi cromo rediseñado y sello CREADOR para @joelnbl (Sonnet). ✔
+- **T-07** SEO (Sonnet): robots.txt, sitemap con cromos públicos, canonical, OG/Twitter en /c/, JSON-LD WebSite, páginas privadas con noindex. ✔

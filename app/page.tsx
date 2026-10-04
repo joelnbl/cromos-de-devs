@@ -1,4 +1,5 @@
 import { SignInLink } from "@/components/SignInLink";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Cromo } from "@/components/Cromo";
 import { HeroFan } from "@/components/HeroFan";
@@ -8,6 +9,9 @@ import { RARITIES, RARITY_ORDER } from "@/lib/cards";
 import { getUser } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { errorText } from "@/lib/i18n/dict";
+import { siteUrl } from "@/lib/site";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
@@ -23,8 +27,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
     <SignInLink className="btn btn-dark min-h-14 px-7 text-lg">{t.home.ctaGet}</SignInLink>
   );
 
+  const jsonLd = { "@context": "https://schema.org", "@type": "WebSite", name: "Cromos de devs", url: siteUrl() };
+
   return (
     <main className="pb-20 md:pb-0">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <section className="relative overflow-hidden border-b-[3px] border-ink bg-sun">
         <div className="halftone pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-10 md:grid-cols-2 md:pb-24 md:pt-16">

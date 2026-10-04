@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, type CSSProperties, type PointerEvent } from "react";
-import { RARITIES, cardNumber, formatCount, langStyle, yearsOnGithub, type Card } from "@/lib/cards";
+import { RARITIES, cardNumber, formatCount, isCreator, langStyle, yearsOnGithub, type Card } from "@/lib/cards";
 import { useT } from "@/lib/i18n/client";
 
 type Props = {
@@ -118,6 +118,7 @@ export function Cromo({ card, width, interactive = true, faceDown = false, eager
                 <div className="cromo-avatar cromo-avatar-initials">{initialsOf(displayName)}</div>
               )}
               <span className="cromo-num cromo-mono">#{cardNumber(card.id)}</span>
+              {isCreator(card.login) && <span className="cromo-creator cromo-mono">★ {t.card.creator}</span>}
               <span className="cromo-rarity cromo-mono">
                 {rarity.symbol} {rarity.label.toUpperCase()}
               </span>

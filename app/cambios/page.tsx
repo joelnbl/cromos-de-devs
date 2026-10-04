@@ -9,7 +9,7 @@ import { siteUrl } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
-  return { title: t.trades.title };
+  return { title: t.trades.title, robots: { index: false } };
 }
 
 type Search = { error?: string; dar?: string; busco?: string; hecho?: string };

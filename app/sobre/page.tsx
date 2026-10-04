@@ -10,7 +10,7 @@ import { nextPackAt, siteUrl, todayUtc } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
-  return { title: t.pack.title };
+  return { title: t.pack.title, robots: { index: false } };
 }
 
 /** Día UTC desplazado n días, como "YYYY-MM-DD" (los sobres van por día UTC). */

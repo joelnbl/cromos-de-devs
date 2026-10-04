@@ -15,9 +15,23 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const [card, { t }] = await Promise.all([cardByLogin(login), getT()]);
   if (!card) return { title: t.cardPage.notFound };
   const name = card.name ?? card.login;
+  const title = `${name} (@${card.login})`;
+  const description = t.cardPage.description(name, t.rarity[card.rarity].label);
+  const path = `/c/${card.login}`;
   return {
-    title: `${name} (@${card.login})`,
-    description: t.cardPage.description(name, t.rarity[card.rarity].label),
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: path,
+      siteName: "Cromos de devs",
+      locale: t.meta.ogLocale,
+      alternateLocale: ["es_ES", "en_US"],
+    },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
