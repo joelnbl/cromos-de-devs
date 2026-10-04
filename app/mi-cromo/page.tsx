@@ -13,6 +13,8 @@ import { getUser } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/site";
 import { FirstSteps } from "@/components/FirstSteps";
 import { getFirstSteps } from "@/lib/first-steps";
+import { Badges } from "@/components/Badges";
+import { getBadges } from "@/lib/badges";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -46,6 +48,7 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
   }
 
   const steps = supabase && user ? await getFirstSteps(supabase, user.id, true) : null;
+  const badges = supabase && user ? await getBadges(supabase, user.id, card) : null;
   const url = `${siteUrl()}/c/${card.login}`;
   const owners = card.owners;
 
@@ -128,6 +131,8 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
               </div>
             </dl>
           </section>
+
+          {badges && <Badges badges={badges} t={t.badges} />}
 
           {/* Cómo subir el número */}
           <section>

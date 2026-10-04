@@ -20,9 +20,8 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 ## Esperan a poder aplicar migraciones (Supabase bloqueado desde este entorno)
 
 - **T-10 Invitaciones con recompensa** (tabla de invitaciones; sin correos, solo enlace con código).
-- **T-13 Evento del día** (p. ej. «hoy más legendarias»), tabla `events` y ajuste de `open_daily_pack`.
+- **T-13 Evento del día**: migración lista `20261005170000_eventos.sql` (tabla `pack_events` + `open_daily_pack` con eventos). Crear un evento: `insert into public.pack_events (day, kind, value) values (current_date, 'boost', null);` (kinds: `boost`, `country` con value ISO de 2 letras, `language` con value = lenguaje principal).
 - **T-14 Avisos en la app** (tabla de notificaciones y disparadores al cerrar cambios).
-- **T-16 Insignias** (racha de 7, 10 cambios…).
 - **T-11 Álbum público de otros devs**: requiere decidir si la colección deja de ser privada. No se hace sin el dueño.
 
 ## Pendiente de decidir
@@ -51,3 +50,4 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 - **T-20** Sonidos: intercambio al aceptar cambios y pasar página en el álbum (Haiku). ✔
 - **T-23** Primeros pasos: tira de 3 pasos en Mi cromo y aviso en el álbum para abrir el primer sobre (Sonnet). ✔
 - **QA** 12 rutas × móvil/escritorio × es/en sin fallos (Haiku). ✔
+- **T-16** Insignias en Mi cromo calculadas con datos existentes (11 insignias, sin tablas nuevas) (Sonnet). ✔

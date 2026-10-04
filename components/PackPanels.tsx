@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Cromo } from "./Cromo";
-import { PACK_ODDS, RARITIES, RARITY_ORDER, cardNumber, countryName, type Card, type Rarity } from "@/lib/cards";
+import { PACK_ODDS, PACK_ODDS_BOOST, RARITIES, RARITY_ORDER, cardNumber, countryName, type Card, type Rarity } from "@/lib/cards";
 import { useLocale, useT } from "@/lib/i18n/client";
 
 export type PackInfo = {
@@ -17,6 +17,7 @@ export type PackInfo = {
   offers: { offer: number; want: number }[];
   todayCards: Card[];
   site: string;
+  event: { kind: "boost" | "country" | "language"; value: string | null } | null;
 };
 
 type Pull = { card: Card; isNew: boolean };
@@ -100,10 +101,22 @@ export function StreakPanel({ info }: { info: PackInfo }) {
   );
 }
 
-export function OddsPanel() {
+export function OddsPanel({ event }: { event?: PackInfo["event"] }) {
   const t = useT();
+  const locale = useLocale();
+  const odds = event?.kind === "boost" ? PACK_ODDS_BOOST : PACK_ODDS;
+  let banner: string | null = null;
+  if (event?.kind === "boost") banner = t.packEvent.boost;
+  else if (event?.kind === "country" && event.value) banner = t.packEvent.country(countryName(event.value, locale, t.myCard.otherCountry));
+  else if (event?.kind === "language" && event.value) banner = t.packEvent.language(event.value);
   return (
     <aside aria-labelledby="odds-title" className="flex flex-col gap-3.5 rounded-3xl border-2 border-white/20 bg-black/35 p-5 text-white">
+      {banner && (
+        <p className="rounded-2xl bg-sun px-4 py-3 text-center text-base font-black leading-snug text-ink shadow-[0_0_0_3px_rgba(255,255,255,0.25)]">
+          <span aria-hidden="true">✨ </span>
+          {banner}
+        </p>
+      )}
       <h2 id="odds-title" className="text-xl font-black">
         {t.pack.oddsTitle}
       </h2>
@@ -115,9 +128,9 @@ export function OddsPanel() {
               {RARITIES[r].symbol} {t.rarity[r].label}
             </span>
             <span className="h-2.5 overflow-hidden rounded-full bg-white/10">
-              <span className="block h-full min-w-1" style={{ width: `${PACK_ODDS[r]}%`, background: ODDS_BAR[r] }} />
+              <span className="block h-full min-w-1" style={{ width: `${odds[r]}%`, background: ODDS_BAR[r] }} />
             </span>
-            <span className="text-right font-mono text-sm font-extrabold">{String(PACK_ODDS[r]).replace(".", ",")} %</span>
+            <span className="text-right font-mono text-sm font-extrabold">{String(odds[r]).replace(".", ",")} %</span>
           </li>
         ))}
       </ul>

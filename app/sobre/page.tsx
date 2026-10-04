@@ -37,6 +37,7 @@ export default async function SobrePage() {
   let owned: Record<number, number> = {};
   let offers: PackInfo["offers"] = [];
   let todayCards: Card[] = [];
+  let event: PackInfo["event"] = null;
 
   if (supabase && user) {
     const [{ data: openings }, { data: all }, { data: mine }, { data: trades }] = await Promise.all([
@@ -50,6 +51,15 @@ export default async function SobrePage() {
       supabase.from("collection").select("card_id, quantity").eq("user_id", user.id),
       supabase.from("trades").select("from_user, offer_card_id, want_card_id").eq("status", "abierto").limit(300),
     ]);
+    // Evento del día: si la tabla aún no existe, simplemente no hay evento
+    try {
+      const { data: ev, error } = await supabase.from("pack_events").select("kind, value").eq("day", today).maybeSingle();
+      if (!error && ev && ["boost", "country", "language"].includes(ev.kind as string)) {
+        event = { kind: ev.kind as "boost" | "country" | "language", value: (ev.value as string | null) ?? null };
+      }
+    } catch {
+      event = null;
+    }
     opened = new Set((openings ?? []).map((o) => o.opened_on as string));
     todayIds = ((openings ?? []).find((o) => o.opened_on === today)?.card_ids as number[] | null) ?? [];
     cards = (all ?? []) as Pick<Card, "id" | "country">[];
@@ -82,6 +92,7 @@ export default async function SobrePage() {
     offers,
     todayCards,
     site: siteUrl(),
+    event,
   };
 
   return (

@@ -81,6 +81,11 @@ const es = {
     aria: (rarity: string, name: string, login: string, lang: string) =>
       `Cromo ${rarity.toLowerCase()} de ${name} (@${login}), ${lang}`,
   },
+  packEvent: {
+    boost: "Hoy: ¡el triple de épicas, legendarias e iconos!",
+    country: (c: string) => `Hoy salen más cromos de ${c}`,
+    language: (l: string) => `Hoy salen más cromos de ${l}`,
+  },
   pack: {
     title: "Sobre del día",
     swipe: "Desliza el dedo sobre el sobre para rasgarlo",
@@ -242,6 +247,24 @@ const es = {
     boostGiftCta: "Ir a Cambios",
     boostInviteTitle: "Invita a tus amigos devs",
     boostInviteBody: "Mándales el enlace por el chat del equipo o tu grupo de devs.",
+  },
+  badges: {
+    title: "Tus insignias",
+    count: (n: number, total: number): string => `${n} de ${total} ganadas`,
+    earned: "Ganada",
+    items: {
+      streak3: { title: "Racha de 3", body: "Abre sobre 3 días seguidos." },
+      streak7: { title: "Racha de 7", body: "Abre sobre 7 días seguidos." },
+      packs10: { title: "10 sobres", body: "Abre 10 sobres en total." },
+      firstTrade: { title: "Primer cambio", body: "Completa tu primer cambio." },
+      trades5: { title: "Cambista", body: "Completa 5 cambios." },
+      firstGift: { title: "Generoso", body: "Regala un cromo y que alguien lo acepte." },
+      album25: { title: "Cuarto de álbum", body: "Llena el 25 % del álbum." },
+      epic: { title: "Brillo épico", body: "Ten una épica o mejor." },
+      legend: { title: "De leyenda", body: "Ten una legendaria o un icono." },
+      owners5: { title: "Popular", body: "Tu cromo está en 5 álbumes." },
+      team: { title: "Selección", body: "Completa todos los cromos de un país (mínimo 2)." },
+    },
   },
   firstSteps: {
     title: "Primeros pasos",
@@ -502,6 +525,11 @@ const en: Dict = {
     polyglot: "Polyglot",
     aria: (rarity: string, name: string, login: string, lang: string) => `${rarity} card of ${name} (@${login}), ${lang}`,
   },
+  packEvent: {
+    boost: "Today: triple the epics, legendaries and icons!",
+    country: (c: string) => `Today you get more cards from ${c}`,
+    language: (l: string) => `Today you get more ${l} cards`,
+  },
   pack: {
     title: "Daily pack",
     swipe: "Swipe across the pack to tear it open",
@@ -662,6 +690,24 @@ const en: Dict = {
     boostGiftCta: "Go to Trades",
     boostInviteTitle: "Invite your dev friends",
     boostInviteBody: "Send them the link in your team chat or dev group.",
+  },
+  badges: {
+    title: "Your badges",
+    count: (n: number, total: number): string => `${n} of ${total} earned`,
+    earned: "Earned",
+    items: {
+      streak3: { title: "3-day streak", body: "Open a pack 3 days in a row." },
+      streak7: { title: "7-day streak", body: "Open a pack 7 days in a row." },
+      packs10: { title: "10 packs", body: "Open 10 packs in total." },
+      firstTrade: { title: "First trade", body: "Complete your first trade." },
+      trades5: { title: "Trader", body: "Complete 5 trades." },
+      firstGift: { title: "Generous", body: "Gift a card and have someone accept it." },
+      album25: { title: "Quarter album", body: "Fill 25% of the album." },
+      epic: { title: "Epic shine", body: "Own an epic or better." },
+      legend: { title: "Legendary", body: "Own a legendary or an icon." },
+      owners5: { title: "Popular", body: "Your card is in 5 albums." },
+      team: { title: "Full squad", body: "Complete every card of one country (at least 2)." },
+    },
   },
   firstSteps: {
     title: "First steps",

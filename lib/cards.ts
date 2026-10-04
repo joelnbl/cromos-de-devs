@@ -46,6 +46,8 @@ export const isTopRarity = (r: Rarity) => r === "legendaria" || r === "icono";
 
 /** Probabilidad (%) de cada rareza por cromo del sobre. Igual que open_daily_pack en la base de datos. */
 export const PACK_ODDS: Record<Rarity, number> = { comun: 67.5, rara: 22, epica: 8, legendaria: 2, icono: 0.5 };
+/** Probabilidades el día de evento «boost» (coherentes con open_daily_pack, migración 20261005170000). */
+export const PACK_ODDS_BOOST: Record<Rarity, number> = { comun: 50, rara: 18.5, epica: 24, legendaria: 6, icono: 1.5 };
 
 /**
  * Referentes de la comunidad que reciben la Icono sí o sí. Su cromo NO existe

@@ -44,7 +44,7 @@ function IdleLayout({ info, children }: { info: PackInfo; children: React.ReactN
         </div>
         <div className="order-1 lg:order-2">{children}</div>
         <div className="order-3">
-          <OddsPanel />
+          <OddsPanel event={info.event} />
         </div>
       </div>
     </div>
