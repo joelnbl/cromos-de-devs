@@ -6,6 +6,7 @@ import { CARD_COLUMNS, RARITY_ORDER, countryName, type Card, type Rarity } from 
 import { getT } from "@/lib/i18n/server";
 import { DEMO_CARDS } from "@/lib/demo";
 import { getUser } from "@/lib/supabase/server";
+import { hasOpenedPack } from "@/lib/first-steps";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -36,6 +37,7 @@ export default async function AlbumPage({ searchParams }: { searchParams: Promis
   if (supabase && !user) redirect("/?error=needLogin");
   const country = (c: string | null) => (c ? countryName(c, locale, t.myCard.otherCountry) : t.myCard.otherCountry);
 
+  const packNudge = supabase && user ? !(await hasOpenedPack(supabase, user.id)) : false;
   let all: Card[] = [];
   let owned = new Map<number, number>();
   if (!supabase || !user) {
@@ -137,6 +139,15 @@ export default async function AlbumPage({ searchParams }: { searchParams: Promis
               <span className="text-xl md:text-3xl"> / {all.length}</span>
             </p>
           </div>
+
+          {packNudge && (
+            <p className="flex flex-wrap items-center gap-3 self-start rounded-xl border-2 border-ink bg-white px-4 py-2 font-bold">
+              {t.firstSteps.albumNudge}
+              <Link href="/sobre" className="btn btn-dark">
+                {t.firstSteps.albumNudgeCta}
+              </Link>
+            </p>
+          )}
 
           <div
             className="flex h-4 overflow-hidden rounded-full border-2 border-ink bg-white md:h-5"

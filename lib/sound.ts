@@ -228,4 +228,21 @@ export const sfx = {
       vibrate([80, 40, 160]);
     }
   },
+  /** Intercambio: dos golpecitos de cartón (uno grave, otro agudo). */
+  swap() {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime;
+    // Golpecito grave
+    click(c, t, 0.08);
+    // Golpecito agudo
+    click(c, t + 0.12, 0.08);
+  },
+  /** Pasar página de papel. */
+  page() {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime;
+    noiseBurst(c, t, 0.2, 4000, 800, "lowpass", 0.06);
+  },
 };

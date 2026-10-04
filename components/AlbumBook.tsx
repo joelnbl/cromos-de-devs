@@ -80,7 +80,7 @@ export function AlbumBook({
     if (inModal) return step(dx < 0 ? 1 : -1);
     const target = dx < 0 ? next : prev;
     if (target) {
-      sfx.flip();
+      sfx.page();
       router.push(target.href, { scroll: false });
     }
   };
@@ -200,7 +200,7 @@ export function AlbumBook({
 
       <nav aria-label={t.album.albumsAria} className="flex flex-wrap items-center justify-between gap-3 pb-6 pt-2">
         {prev ? (
-          <Link href={prev.href} scroll={false} aria-label={t.album.prevAria} className="btn btn-ghost border-2 border-ink bg-white">
+          <Link href={prev.href} scroll={false} onClick={() => sfx.page()} aria-label={t.album.prevAria} className="btn btn-ghost border-2 border-ink bg-white">
             <Chevron dir="left" />
             <span className="hidden sm:inline">{prev.label}</span>
           </Link>
@@ -226,7 +226,7 @@ export function AlbumBook({
           </span>
         </p>
         {next ? (
-          <Link href={next.href} scroll={false} aria-label={t.album.nextAria} className="btn btn-dark">
+          <Link href={next.href} scroll={false} onClick={() => sfx.page()} aria-label={t.album.nextAria} className="btn btn-dark">
             <span className="hidden sm:inline">{next.label}</span>
             <Chevron dir="right" />
           </Link>

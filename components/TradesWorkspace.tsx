@@ -103,10 +103,10 @@ function Avatar({ src, size = 40, dashed }: { src: string | null | undefined; si
   );
 }
 
-function Submit({ children, className, pendingLabel }: { children: ReactNode; className: string; pendingLabel?: string }) {
+function Submit({ children, className, pendingLabel, onClick }: { children: ReactNode; className: string; pendingLabel?: string; onClick?: () => void }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} aria-busy={pending} className={className}>
+    <button type="submit" disabled={pending} aria-busy={pending} onClick={onClick} className={className}>
       {pending ? (pendingLabel ?? "…") : children}
     </button>
   );
@@ -208,7 +208,7 @@ function ForYou({ matches }: { matches: Match[] }) {
             <form action={acceptTrade}>
               <input type="hidden" name="code" value={m.code} />
               <input type="hidden" name="from" value="cambios" />
-              <Submit className="min-h-13 w-full rounded-full bg-sun text-base font-black text-ink disabled:opacity-60">{m.want ? t.trades.tradeNow : t.trades.giftTake}</Submit>
+              <Submit onClick={() => sfx.swap()} className="min-h-13 w-full rounded-full bg-sun text-base font-black text-ink disabled:opacity-60">{m.want ? t.trades.tradeNow : t.trades.giftTake}</Submit>
             </form>
           </li>
         ))}
@@ -690,7 +690,7 @@ function AcceptFromBoard({ item }: { item: BoardItem }) {
           {t.trades.youHaveIt} · {t.trades.accept}
         </button>
       ) : (
-        <Submit className="min-h-11 rounded-full bg-ink px-4 text-sm font-black text-sun disabled:opacity-60">
+        <Submit onClick={() => sfx.swap()} className="min-h-11 rounded-full bg-ink px-4 text-sm font-black text-sun disabled:opacity-60">
           {last ? t.trades.confirmYes : item.want ? `${t.trades.youHaveIt} · ${t.trades.accept}` : t.trades.giftTake}
         </Submit>
       )}

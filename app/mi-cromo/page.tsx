@@ -11,6 +11,8 @@ import { errorText } from "@/lib/i18n/dict";
 import { DEMO_CARDS } from "@/lib/demo";
 import { getUser } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/site";
+import { FirstSteps } from "@/components/FirstSteps";
+import { getFirstSteps } from "@/lib/first-steps";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -43,6 +45,7 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
     );
   }
 
+  const steps = supabase && user ? await getFirstSteps(supabase, user.id, true) : null;
   const url = `${siteUrl()}/c/${card.login}`;
   const owners = card.owners;
 
@@ -77,6 +80,12 @@ export default async function MiCromoPage({ searchParams }: { searchParams: Prom
           </div>
         </div>
       </header>
+
+      {steps && (
+        <div className="mx-auto max-w-6xl px-4 pt-8">
+          <FirstSteps steps={steps} />
+        </div>
+      )}
 
       <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 py-10 md:grid-cols-[auto_1fr] md:gap-12">
         <div className="flex justify-center">

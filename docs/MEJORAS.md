@@ -48,3 +48,6 @@ nuevas van en `supabase/migrations/` y se prueban en local antes.
 - **T-18** Imagen OG de cada cambio y regalo en `/t/[código]` (Sonnet). ✔
 - **T-15** Ranking público `/ranking` con podio, filtros por país y lenguaje (Sonnet). ✔
 - **T-19** Web instalable en el móvil: manifest, iconos 192/512/maskable, abre en /sobre (Sonnet). ✔
+- **T-20** Sonidos: intercambio al aceptar cambios y pasar página en el álbum (Haiku). ✔
+- **T-23** Primeros pasos: tira de 3 pasos en Mi cromo y aviso en el álbum para abrir el primer sobre (Sonnet). ✔
+- **QA** 12 rutas × móvil/escritorio × es/en sin fallos (Haiku). ✔
