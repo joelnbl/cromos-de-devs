@@ -35,7 +35,6 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
   const level = yearsOnGithub(card.github_created_at);
   const displayName = card.name?.trim() || card.login;
   const topRepo = card.top_repos[0];
-  const year = card.github_created_at ? new Date(card.github_created_at).getFullYear() : null;
 
   const onMove = useCallback(
     (e: PointerEvent<HTMLDivElement>) => {
@@ -67,8 +66,6 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
     for (const p of ["--mx", "--my", "--lx", "--ly", "--rx", "--ry", "--o"]) el.style.removeProperty(p);
   }, []);
 
-  const textured = card.rarity === "epica" || card.rarity === "legendaria";
-
   return (
     <div
       ref={ref}
@@ -85,68 +82,61 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
       <div className="cromo-tilt">
         <div className="cromo-face cromo-front" aria-hidden="true">
           <div className="cromo-body">
-            <div className="cromo-shine" />
-            {textured && <div className="cromo-relief" />}
-
-            <div className="cromo-top cromo-mono">
-              <span>CROMO #{cardNumber(card.id)}</span>
-              <span>
-                {rarity.symbol} {rarity.label.toUpperCase()}
-              </span>
-            </div>
-
             <div className="cromo-art">
-              <span className="cromo-plus cromo-mono">+</span>
-              <span className="cromo-plus cromo-mono">+</span>
-              <span className="cromo-plus cromo-mono">+</span>
-              <span className="cromo-plus cromo-mono">+</span>
+              <div className="cromo-rays" />
+              <div className="cromo-sparks" />
               {card.avatar_url ? (
                 <img className="cromo-avatar" src={card.avatar_url} alt="" draggable={false} crossOrigin="anonymous" />
               ) : (
                 <div className="cromo-avatar cromo-avatar-initials">{initialsOf(displayName)}</div>
               )}
-            </div>
-
-            <div>
-              <div className="cromo-name">{displayName}</div>
-              <div className="cromo-login cromo-mono">@{card.login}</div>
-            </div>
-
-            <div className="cromo-chips">
-              <span className="cromo-chip">
-                <span className="cromo-dot" />
-                {lang.name}
+              <span className="cromo-num cromo-mono">#{cardNumber(card.id)}</span>
+              <span className="cromo-rarity cromo-mono">
+                {rarity.symbol} {rarity.label.toUpperCase()}
               </span>
-              <span className="cromo-chip cromo-mono">NV {level}</span>
-              {card.country && <span className="cromo-chip cromo-mono">{card.country}</span>}
             </div>
-
-            <div className="cromo-stats cromo-mono">
-              <div className="cromo-stat">
-                <span className="cromo-stat-label">Estrellas</span>
-                <span className="cromo-stat-value">{formatCount(card.stars)}</span>
+            <div className="cromo-seam" />
+            <div className="cromo-info">
+              <div>
+                <div className="cromo-name">{displayName}</div>
+                <div className="cromo-meta cromo-mono">
+                  <span>@{card.login}</span>
+                  <span className="cromo-sep" />
+                  <span className="cromo-lang">
+                    <span className="cromo-dot" />
+                    {lang.name}
+                  </span>
+                  <span className="cromo-right">
+                    NV {level}
+                    {card.country ? ` · ${card.country}` : ""}
+                  </span>
+                </div>
               </div>
-              <div className="cromo-stat">
-                <span className="cromo-stat-label">Fans</span>
-                <span className="cromo-stat-value">{formatCount(card.followers)}</span>
+              <div className="cromo-stats">
+                <div className="cromo-stat">
+                  <span className="cromo-stat-value">{formatCount(card.stars)}</span>
+                  <span className="cromo-stat-label cromo-mono">ESTRELLAS</span>
+                </div>
+                <div className="cromo-stat">
+                  <span className="cromo-stat-value">{formatCount(card.followers)}</span>
+                  <span className="cromo-stat-label cromo-mono">FANS</span>
+                </div>
+                <div className="cromo-stat">
+                  <span className="cromo-stat-value">{formatCount(card.commits)}</span>
+                  <span className="cromo-stat-label cromo-mono">COMMITS</span>
+                </div>
               </div>
-              <div className="cromo-stat">
-                <span className="cromo-stat-label">Commits</span>
-                <span className="cromo-stat-value">{formatCount(card.commits)}</span>
+              <div className="cromo-repo cromo-mono">
+                <span>▸ {topRepo?.name ?? "hola-mundo"}</span>
+                <span>★ {formatCount(topRepo?.stars ?? 0)}</span>
+              </div>
+              <div className="cromo-foot cromo-mono">
+                <span>CROMOS DE DEVS</span>
+                <span>{"{ }"} T1</span>
               </div>
             </div>
-
-            <div className="cromo-repo cromo-mono">
-              <span>→ {topRepo?.name ?? "hola-mundo"}</span>
-              <span>★ {formatCount(topRepo?.stars ?? 0)}</span>
-            </div>
-
-            <div className="cromo-foot cromo-mono">
-              <span>CROMOS DE DEVS</span>
-              <span>T1{year ? ` · ${year}` : ""}</span>
-            </div>
-
-            {textured && <div className="cromo-holo" />}
+            <div className="cromo-sweep" />
+            {card.rarity === "legendaria" && <div className="cromo-holo" />}
             <div className="cromo-glare" />
           </div>
         </div>
@@ -154,10 +144,13 @@ export function Cromo({ card, width, interactive = true, faceDown = false, class
         <div className="cromo-face cromo-back" aria-hidden="true">
           <div className="cromo-body">
             <div className="cromo-back-logo cromo-mono">
-              <span>{"{ }"}</span>
+              <span>{"{}"}</span>
             </div>
-            <div className="cromo-back-title">Cromos de devs</div>
-            <div className="cromo-back-sub cromo-mono">TEMPORADA 1</div>
+            <div className="cromo-back-title">
+              Cromos
+              <br />
+              de devs
+            </div>
           </div>
         </div>
       </div>

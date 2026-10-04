@@ -99,8 +99,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
         <div className="mx-auto max-w-6xl px-4 py-20">
           <h2 className="display text-6xl">Cuatro rarezas</h2>
           <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">
-            La rareza sale de tus datos públicos de GitHub. Nadie la compra. Pasa el dedo o el ratón por encima: las
-            épicas y legendarias tienen relieve.
+            La rareza sale de tus datos públicos de GitHub. Nadie la compra. Pasa el dedo o el ratón por encima: el
+            metal brilla y cuanto más rara, más luz.
           </p>
           <div className="mt-12 grid grid-cols-2 justify-items-center gap-x-4 gap-y-10 lg:grid-cols-4">
             {byRarity.map((card) => (

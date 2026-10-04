@@ -13,6 +13,7 @@ import { sfx } from "@/lib/sound";
 import { SoundToggle } from "./SoundToggle";
 
 const PackScene = dynamic(() => import("./three/PackScene"), { ssr: false });
+const Reveal3D = dynamic(() => import("./three/Reveal3D"), { ssr: false });
 
 type Pull = { card: Card; isNew: boolean };
 type Phase = "idle" | "tearing" | "fan" | "reveal" | "summary" | "empty" | "done-today";
@@ -37,6 +38,11 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
   const result = useRef<PackResult | null>(null);
   const request = useRef<Promise<PackResult> | null>(null);
   const use3d = !reduce && !webglFailed;
+  const use3dRef = useRef(use3d);
+  const [revealed, setRevealed] = useState(-1);
+  useEffect(() => {
+    use3dRef.current = use3d;
+  }, [use3d]);
 
   /** Pide las cartas una sola vez, en cuanto se toca el sobre. */
   const fetchPack = useCallback(() => {
@@ -77,6 +83,12 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
     }
     setPulls(r.cards);
     setIndex(0);
+    setRevealed(-1);
+    if (use3dRef.current) {
+      // El revelado 3D hace su propio abanico
+      setPhase("reveal");
+      return;
+    }
     setPhase("fan");
     if (!reduce) sfx.whoosh();
     setTimeout(() => setPhase("reveal"), reduce ? 0 : 1300);
@@ -154,7 +166,50 @@ export function PackOpener({ demo, openedToday, nextAt, open }: Props) {
 
       {phase === "fan" && <FanOut pulls={pulls} />}
 
-      {phase === "reveal" && pulls[index] && (
+      {phase === "reveal" && use3d && pulls[index] && (
+        <div className="relative z-10 flex w-full flex-col items-center gap-3">
+          <div className="font-mono text-sm font-bold text-sun" aria-live="polite">
+            {index + 1} / {pulls.length}
+          </div>
+          <div className="relative h-[min(58vh,520px)] w-full max-w-xl">
+            <Reveal3D
+              pulls={pulls}
+              index={index}
+              onRevealed={setRevealed}
+              onFail={() => setWebglFailed(true)}
+              onTap={next}
+            />
+            <AnimatePresence>
+              {revealed === index && (
+                <motion.div
+                  key={`tag-${index}`}
+                  className="pointer-events-none absolute left-0 right-0 top-2 flex justify-center"
+                  initial={{ scale: 0, rotate: -12 }}
+                  animate={{ scale: 1, rotate: -6 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 14 }}
+                >
+                  <span
+                    className={`block rounded-full border-2 border-ink px-4 py-1.5 font-mono text-sm font-bold shadow-[3px_3px_0_#111] ${pulls[index].isNew ? "bg-sun text-ink" : "bg-white text-ink"}`}
+                  >
+                    {pulls[index].isNew ? "¡NUEVO!" : "REPETIDO"}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <p className="h-5 font-mono text-sm font-bold text-sun" aria-live="polite">
+            {revealed === index
+              ? `${RARITIES[pulls[index].card.rarity].symbol} ${RARITIES[pulls[index].card.rarity].label.toUpperCase()} · ${pulls[index].card.name ?? pulls[index].card.login}`
+              : ""}
+          </p>
+          <button type="button" onClick={next} disabled={revealed !== index} className="btn btn-sun">
+            {index + 1 >= pulls.length ? "Ver resumen" : "Siguiente cromo"}
+          </button>
+        </div>
+      )}
+
+      {phase === "reveal" && !use3d && pulls[index] && (
         <div className="relative z-10 flex flex-col items-center gap-6">
           <div className="font-mono text-sm font-bold text-sun">
             {index + 1} / {pulls.length}

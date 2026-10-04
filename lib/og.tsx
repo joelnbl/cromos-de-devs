@@ -4,10 +4,10 @@ import { RARITIES, cardNumber, formatCount, langStyle, type Card } from "@/lib/c
 export const OG_SIZE = { width: 1200, height: 630 };
 
 const LOOK: Record<Card["rarity"], { ring: string; bg: string; ink: string; soft: string; line: string; glow: string }> = {
-  comun: { ring: "linear-gradient(160deg, #3A3A3A, #1C1C1C 50%, #2A2A2A)", bg: "#0A0A0A", ink: "#EDEDED", soft: "#A1A1A1", line: "#262626", glow: "rgba(0,0,0,0)" },
-  rara: { ring: "linear-gradient(140deg, #3291FF, #1A1A1A 38%, #1A1A1A 62%, #79FFE1)", bg: "#0A0A0A", ink: "#EDEDED", soft: "#A1A1A1", line: "#262626", glow: "rgba(50,145,255,0.35)" },
-  epica: { ring: "linear-gradient(135deg, #FF4D8D, #7928CA 35%, #0070F3 70%, #50E3C2)", bg: "#0A0A0A", ink: "#EDEDED", soft: "#A1A1A1", line: "#2A2A2A", glow: "rgba(121,40,202,0.45)" },
-  legendaria: { ring: "linear-gradient(135deg, #FFFFFF, #FFD1F0 30%, #C6F0FF 60%, #FFF6C9)", bg: "linear-gradient(160deg, #FFFFFF, #DADADA 40%, #F7F7F7 52%, #C4C4C4)", ink: "#0A0A0A", soft: "#4D4D4D", line: "rgba(0,0,0,0.14)", glow: "rgba(255,255,255,0.35)" },
+  comun: { ring: "linear-gradient(135deg, #6B4A2B, #E3B486 45%, #7A5230 75%, #B9824F)", bg: "linear-gradient(180deg, #1C1814, #110F0C)", ink: "#F3E9DD", soft: "#B9A894", line: "rgba(255,255,255,0.12)", glow: "rgba(0,0,0,0)" },
+  rara: { ring: "linear-gradient(135deg, #7D868F, #FFFFFF 45%, #8E98A2 75%, #DDE3E8)", bg: "linear-gradient(180deg, #151A20, #0D1015)", ink: "#EEF4FA", soft: "#9FB0C2", line: "rgba(255,255,255,0.12)", glow: "rgba(120,190,255,0.35)" },
+  epica: { ring: "linear-gradient(135deg, #8A6A12, #FFF3C0 45%, #B8860B 75%, #F2D36B)", bg: "linear-gradient(180deg, #1D1426, #110C17)", ink: "#FFF6DE", soft: "#C9B8D9", line: "rgba(255,255,255,0.12)", glow: "rgba(160,100,255,0.5)" },
+  legendaria: { ring: "linear-gradient(135deg, #8A6A12, #FFFFFF 40%, #E8BE45 65%, #9C7414)", bg: "linear-gradient(170deg, #FFE9A3, #E8BE45 45%, #FFF3C0 60%, #C99A1C)", ink: "#2A1C00", soft: "#5C4610", line: "rgba(0,0,0,0.15)", glow: "rgba(255,216,77,0.7)" },
 };
 
 export function cardOgImage(card: Card | null) {
@@ -39,7 +39,7 @@ export function cardOgImage(card: Card | null) {
             display: "flex",
             width: 330,
             height: 461,
-            padding: 2,
+            padding: 8,
             borderRadius: 26,
             background: look.ring,
             boxShadow: `14px 14px 0 #111111, 0 0 60px ${look.glow}`,
@@ -52,7 +52,7 @@ export function cardOgImage(card: Card | null) {
               flexDirection: "column",
               width: "100%",
               height: "100%",
-              borderRadius: 24,
+              borderRadius: 18,
               background: look.bg,
               color: look.ink,
               padding: 22,

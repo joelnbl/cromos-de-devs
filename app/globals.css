@@ -88,8 +88,8 @@ body {
 }
 
 /* =========================================================================
-   El cromo (estilo técnico: negro, borde de 1 px y cuadrícula; el color
-   vive en el borde y el brillo, y crece con la rareza)
+   El cromo · barajita foil (marco de metal, rayos detrás de la foto).
+   Mismo lenguaje que el sobre 3D. Medidas en em: 1em = ancho / 20.
    ========================================================================= */
 
 .cromo {
@@ -104,14 +104,16 @@ body {
   --o: 0;
   --flip: 0deg;
 
-  --ring: linear-gradient(160deg, #3a3a3a, #1c1c1c 50%, #2a2a2a);
-  --glow: 0 1.4em 2.6em -0.9em rgba(0, 0, 0, 0.75);
-  --bg: #0a0a0a;
-  --ink: #ededed;
-  --soft: #a1a1a1;
-  --line: #262626;
-  --grid: rgba(255, 255, 255, 0.05);
-  --shine: transparent;
+  --metal: linear-gradient(calc(135deg + var(--lx) * 30deg), #6b4a2b, #c08a5a 22%, #8a5f38 45%, #e3b486 62%, #7a5230 82%, #b9824f);
+  --body: linear-gradient(180deg, #1c1814, #110f0c);
+  --rays: rgba(192, 138, 90, 0.22);
+  --glow: rgba(0, 0, 0, 0);
+  --ink: #f3e9dd;
+  --soft: #b9a894;
+  --accent: #d9a673;
+  --cell: rgba(255, 255, 255, 0.06);
+  --cell-line: rgba(255, 255, 255, 0.1);
+  --spark: transparent;
 
   position: relative;
   width: var(--w);
@@ -121,31 +123,39 @@ body {
   flex-shrink: 0;
   user-select: none;
   -webkit-user-select: none;
-  font-family: var(--font-geist), "Geist", system-ui, sans-serif;
+  font-family: var(--font-archivo), "Archivo", system-ui, sans-serif;
 }
 
 .cromo[data-rarity="rara"] {
-  --ring: linear-gradient(calc(140deg + var(--lx) * 40deg), #3291ff, #1a1a1a 38%, #1a1a1a 62%, #79ffe1);
-  --glow: 0 0 0 1px rgba(50, 145, 255, 0.15), 0 1.4em 3.4em -0.9em rgba(50, 145, 255, 0.5);
-  --grid: rgba(50, 145, 255, 0.1);
-  --shine: radial-gradient(circle at var(--mx) var(--my), rgba(50, 145, 255, 0.22), transparent 55%);
+  --metal: linear-gradient(calc(135deg + var(--lx) * 30deg), #7d868f, #f4f7fa 22%, #a9b3bd 45%, #ffffff 60%, #8e98a2 80%, #dde3e8);
+  --body: linear-gradient(180deg, #151a20, #0d1015);
+  --rays: rgba(120, 190, 255, 0.26);
+  --glow: rgba(120, 190, 255, 0.35);
+  --ink: #eef4fa;
+  --soft: #9fb0c2;
+  --accent: #9fd3ff;
 }
 .cromo[data-rarity="epica"] {
-  --ring: conic-gradient(from calc(210deg + var(--lx) * 70deg), #ff4d8d, #7928ca, #0070f3, #50e3c2, #ff4d8d);
-  --glow: 0 0 4em -0.6em rgba(121, 40, 202, 0.65), 0 1.4em 3.4em -0.9em rgba(255, 77, 141, 0.38);
-  --line: #2a2a2a;
-  --grid: rgba(255, 255, 255, 0.07);
-  --shine: radial-gradient(circle at calc(100% - var(--mx)) 10%, rgba(121, 40, 202, 0.32), transparent 50%),
-    radial-gradient(circle at var(--mx) 95%, rgba(80, 227, 194, 0.2), transparent 45%);
+  --metal: linear-gradient(calc(135deg + var(--lx) * 30deg), #8a6a12, #f7e08a 22%, #c99a1c 45%, #fff3c0 60%, #b8860b 80%, #f2d36b);
+  --body: linear-gradient(180deg, #1d1426, #110c17);
+  --rays: rgba(180, 120, 255, 0.34);
+  --glow: rgba(160, 100, 255, 0.55);
+  --ink: #fff6de;
+  --soft: #c9b8d9;
+  --accent: #ffd84d;
+  --spark: radial-gradient(circle, rgba(255, 240, 190, 0.95) 0 0.08em, transparent 0.13em);
 }
 .cromo[data-rarity="legendaria"] {
-  --ring: conic-gradient(from calc(90deg + var(--lx) * 90deg), #ffffff, #ffd1f0, #c6f0ff, #fff6c9, #d7ffe0, #ffffff);
-  --glow: 0 0 5em -0.4em rgba(255, 255, 255, 0.35), 0 0 2em -0.4em rgba(198, 240, 255, 0.55);
-  --bg: linear-gradient(calc(160deg + var(--lx) * 25deg), #ffffff 0%, #dadada 40%, #f7f7f7 52%, #c4c4c4 100%);
-  --ink: #0a0a0a;
-  --soft: #4d4d4d;
-  --line: rgba(0, 0, 0, 0.14);
-  --grid: rgba(0, 0, 0, 0.06);
+  --metal: linear-gradient(calc(135deg + var(--lx) * 30deg), #8a6a12, #fff3c0 18%, #c99a1c 36%, #ffffff 50%, #e8be45 66%, #fff3c0 82%, #9c7414);
+  --body: linear-gradient(calc(170deg + var(--lx) * 15deg), #ffe9a3, #e8be45 45%, #fff3c0 60%, #c99a1c);
+  --rays: rgba(255, 255, 255, 0.5);
+  --glow: rgba(255, 216, 77, 0.75);
+  --ink: #2a1c00;
+  --soft: #5c4610;
+  --accent: #2a1c00;
+  --cell: rgba(0, 0, 0, 0.08);
+  --cell-line: rgba(0, 0, 0, 0.15);
+  --spark: radial-gradient(circle, #ffffff 0 0.1em, transparent 0.15em);
 }
 
 .cromo[data-facedown="true"] { --flip: 180deg; }
@@ -165,259 +175,251 @@ body {
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  padding: 1px;
-  border-radius: 1.15em;
-  background: var(--ring);
-  box-shadow: var(--glow);
+  padding: 0.5em;
+  border-radius: 1.33em;
+  background: var(--metal);
+  box-shadow:
+    0 0 3.3em var(--glow),
+    0 1.6em 3.2em -0.6em rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform: translateZ(0.01px);
 }
 .cromo-back {
   transform: rotateY(180deg);
-  background: linear-gradient(160deg, #3a3a3a, #1c1c1c 50%, #2a2a2a);
-  box-shadow: 0 1.4em 2.6em -0.9em rgba(0, 0, 0, 0.75);
+  background: linear-gradient(135deg, #8a6a12, #fff3c0 22%, #c99a1c 45%, #ffe08a 62%, #b8860b 82%);
+  box-shadow: 0 1.6em 3.2em -0.6em rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 .cromo-body {
   position: relative;
   height: 100%;
-  box-sizing: border-box;
-  border-radius: calc(1.15em - 1px);
-  background: var(--bg);
-  color: var(--ink);
+  border-radius: 0.92em;
   overflow: hidden;
-  padding: 1em;
+  background: var(--body);
+  color: var(--ink);
   display: flex;
   flex-direction: column;
-  gap: 0.68em;
-}
-.cromo-body > * { position: relative; }
-
-.cromo-mono {
-  font-family: var(--font-geist-mono), "Geist Mono", ui-monospace, monospace;
 }
 
-.cromo-top {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8em;
-  letter-spacing: 0.06em;
-  color: var(--soft);
-}
+.cromo-mono { font-family: var(--font-mono-jb), "JetBrains Mono", ui-monospace, monospace; }
+
+/* --- Foto con rayos --------------------------------------------------- */
 
 .cromo-art {
-  flex: 0 0 8.9em;
-  border: 1px solid var(--line);
-  border-radius: 0.66em;
+  position: relative;
+  flex: 0 0 14.6em;
+  overflow: hidden;
   display: grid;
   place-items: center;
-  background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 1.15em 1.15em;
-  background-position: center;
 }
-.cromo-plus {
+.cromo-rays {
   position: absolute;
-  width: 0.75em;
-  height: 0.75em;
-  font-size: 0.95em;
-  line-height: 0.75em;
-  text-align: center;
-  color: var(--soft);
+  left: 50%;
+  top: 55%;
+  width: 44em;
+  height: 44em;
+  margin: -22em 0 0 -22em;
+  background: repeating-conic-gradient(from calc(var(--lx) * 12deg), var(--rays) 0deg 7deg, transparent 7deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 55%);
+  mask-image: radial-gradient(circle, #000 12%, transparent 55%);
 }
-.cromo-plus:nth-of-type(1) { left: -0.42em; top: -0.42em; }
-.cromo-plus:nth-of-type(2) { right: -0.42em; top: -0.42em; }
-.cromo-plus:nth-of-type(3) { left: -0.42em; bottom: -0.42em; }
-.cromo-plus:nth-of-type(4) { right: -0.42em; bottom: -0.42em; }
-
+.cromo-sparks {
+  position: absolute;
+  inset: 0;
+  background-image: var(--spark);
+  background-size: 1.4em 1.4em;
+  background-position: calc(var(--lx) * 0.4em) calc(var(--ly) * 0.4em);
+  opacity: 0.7;
+}
+.cromo-art::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 4.5em;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.35));
+}
 .cromo-avatar {
-  width: 6.2em;
-  height: 6.2em;
-  border-radius: 1em;
+  position: relative;
+  z-index: 1;
+  width: 8.6em;
+  height: 8.6em;
+  margin-top: 0.8em;
+  border-radius: 2em;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0.7em 2em rgba(0, 0, 0, 0.45);
-  background: color-mix(in oklab, var(--type) 80%, #000000);
-  transform: translate(calc(var(--lx) * 0.18em), calc(var(--ly) * 0.18em));
+  background: radial-gradient(circle at 35% 30%, color-mix(in oklab, var(--type) 60%, #ffffff), var(--type) 70%);
+  box-shadow:
+    0 0 0 0.25em rgba(255, 255, 255, 0.88),
+    0 0 0 0.42em rgba(0, 0, 0, 0.35),
+    0 1.15em 2.2em rgba(0, 0, 0, 0.5);
+  transform: translate(calc(var(--lx) * 0.2em), calc(var(--ly) * 0.2em));
   transition: transform 0.2s ease-out;
 }
 .cromo-avatar-initials {
   display: grid;
   place-items: center;
   color: #ffffff;
-  font-weight: 600;
-  font-size: 2.1em;
-  width: 2.95em;
-  height: 2.95em;
-  border-radius: 0.48em;
-  letter-spacing: -0.02em;
+  font-weight: 900;
+  font-size: 3.3em;
+  width: 2.6em;
+  height: 2.6em;
+  margin-top: 0.24em;
+  border-radius: 0.6em;
+  box-shadow:
+    0 0 0 0.076em rgba(255, 255, 255, 0.88),
+    0 0 0 0.127em rgba(0, 0, 0, 0.35),
+    0 0.35em 0.67em rgba(0, 0, 0, 0.5);
 }
-
-.cromo-name {
-  font-weight: 600;
-  font-size: 1.62em;
-  letter-spacing: -0.035em;
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cromo[data-rarity="epica"] .cromo-name,
-.cromo[data-rarity="legendaria"] .cromo-name {
-  text-shadow:
-    calc(var(--lx) * -0.03em) calc(var(--ly) * -0.03em) 0 rgba(255, 255, 255, 0.35),
-    calc(var(--lx) * 0.04em) calc(var(--ly) * 0.04em) 0 rgba(0, 0, 0, 0.35);
-}
-.cromo-login {
-  font-size: 0.88em;
-  color: var(--soft);
-  margin-top: 0.15em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.cromo-chips { display: flex; gap: 0.45em; flex-wrap: nowrap; overflow: hidden; }
-.cromo-chip {
-  display: inline-flex;
+.cromo-num {
+  position: absolute;
+  z-index: 2;
+  left: 0.83em;
+  top: 0.83em;
+  display: flex;
   align-items: center;
-  gap: 0.45em;
-  height: 1.75em;
-  padding: 0 0.62em;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-size: 0.86em;
-  font-weight: 500;
-  white-space: nowrap;
+  height: 1.83em;
+  padding: 0 0.67em;
+  border-radius: 0.5em;
+  background: var(--metal);
+  color: #1a1200;
+  font-weight: 700;
+  font-size: 0.92em;
+  box-shadow: 0 0.17em 0.5em rgba(0, 0, 0, 0.4);
 }
-.cromo-chip.cromo-mono { font-size: 0.78em; color: var(--soft); }
-.cromo-dot { width: 0.6em; height: 0.6em; border-radius: 50%; background: var(--type); }
-
-.cromo-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.cromo-rarity {
+  position: absolute;
+  z-index: 2;
+  right: 0.83em;
+  top: 0.83em;
+  display: flex;
+  align-items: center;
   gap: 0.4em;
-  padding-top: 0.7em;
-  border-top: 1px solid var(--line);
-}
-.cromo-stat { display: flex; flex-direction: column; gap: 0.2em; min-width: 0; }
-.cromo-stat-label {
-  font-size: 0.68em;
+  height: 2.4em;
+  padding: 0 0.85em;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.75em;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--soft);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
-.cromo-stat-value { font-weight: 500; font-size: 1.18em; }
+.cromo[data-rarity="legendaria"] .cromo-rarity { color: #fff3c0; }
+
+.cromo-seam { height: 0.17em; background: var(--metal); flex-shrink: 0; }
+
+/* --- Datos ------------------------------------------------------------- */
+
+.cromo-info {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.66em;
+  padding: 0.83em 1em;
+}
+.cromo-name {
+  font-weight: 900;
+  font-stretch: 70%;
+  font-size: 2.33em;
+  line-height: 0.92;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cromo[data-rarity="epica"] .cromo-name { text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6), 0 -1px 0 rgba(255, 240, 190, 0.35); }
+.cromo[data-rarity="legendaria"] .cromo-name { text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7); }
+
+.cromo-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.4em;
+  font-size: 0.83em;
+  color: var(--soft);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.cromo-meta .cromo-lang { display: inline-flex; align-items: center; gap: 0.35em; color: var(--ink); }
+.cromo-dot { width: 0.6em; height: 0.6em; border-radius: 50%; background: var(--type); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5); flex-shrink: 0; }
+.cromo-sep { width: 0.25em; height: 0.25em; border-radius: 50%; background: var(--soft); flex-shrink: 0; }
+.cromo-meta .cromo-right { margin-left: auto; }
+
+.cromo-stats { display: flex; gap: 0.5em; }
+.cromo-stat {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.08em;
+  padding: 0.42em 0;
+  border-radius: 0.58em;
+  background: var(--cell);
+  box-shadow: inset 0 0 0 1px var(--cell-line);
+}
+.cromo-stat-value { font-weight: 900; font-size: 1.33em; line-height: 1; }
+.cromo-stat-label { font-weight: 700; font-size: 0.62em; letter-spacing: 0.08em; color: var(--soft); }
 
 .cromo-repo {
   display: flex;
   justify-content: space-between;
-  gap: 0.6em;
   align-items: center;
-  padding: 0.5em 0.7em;
-  border: 1px solid var(--line);
+  gap: 0.6em;
+  height: 2.5em;
+  padding: 0 0.85em;
   border-radius: 0.66em;
-  font-size: 0.86em;
+  background: linear-gradient(90deg, rgba(255, 216, 77, 0.16), rgba(255, 216, 77, 0.04));
+  box-shadow: inset 0 0 0 1px rgba(255, 216, 77, 0.28);
+  font-weight: 700;
+  font-size: 0.88em;
 }
 .cromo-repo span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cromo-repo span:last-child { color: var(--soft); white-space: nowrap; }
+.cromo-repo span:last-child { color: var(--accent); white-space: nowrap; }
 
 .cromo-foot {
   margin-top: auto;
   display: flex;
   justify-content: space-between;
-  font-size: 0.7em;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-size: 0.67em;
+  letter-spacing: 0.12em;
   color: var(--soft);
 }
 
 /* --- Brillos ----------------------------------------------------------- */
 
-.cromo-shine,
+.cromo-sweep,
 .cromo-holo,
-.cromo-glare,
-.cromo-relief {
-  position: absolute !important;
+.cromo-glare {
+  position: absolute;
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
+  z-index: 3;
 }
-.cromo-shine { background: var(--shine); }
-
-.cromo-glare {
-  background: radial-gradient(
-    farthest-corner circle at var(--mx) var(--my),
-    rgba(255, 255, 255, 0.22) 0%,
-    rgba(255, 255, 255, 0.05) 30%,
-    transparent 70%
-  );
-  opacity: var(--o);
-  transition: opacity 0.3s ease;
-}
-.cromo[data-rarity="legendaria"] .cromo-glare {
-  background: radial-gradient(farthest-corner circle at var(--mx) var(--my), rgba(255, 255, 255, 0.85) 0%, transparent 55%);
-  mix-blend-mode: soft-light;
-}
-
-/* Épica: purpurina fina que se mueve */
-.cromo[data-rarity="epica"] .cromo-holo {
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 0.03em, transparent 0.05em),
-    radial-gradient(circle, rgba(200, 160, 255, 0.8) 0 0.025em, transparent 0.045em);
-  background-size: 0.9em 0.9em, 1.4em 1.4em;
-  background-position:
-    calc(var(--lx) * 0.35em) calc(var(--ly) * 0.35em),
-    calc(var(--lx) * -0.45em) calc(var(--ly) * -0.45em);
-  opacity: calc(0.18 + var(--o) * 0.4);
-}
-
-/* Legendaria: arcoíris sobre la plata */
-.cromo[data-rarity="legendaria"] .cromo-holo {
-  background-image: repeating-linear-gradient(
+.cromo-sweep {
+  background: linear-gradient(
     115deg,
-    rgba(255, 0, 128, 0.16) 0,
-    rgba(0, 200, 255, 0.16) 1.2em,
-    rgba(255, 230, 0, 0.16) 2.4em,
-    rgba(80, 255, 160, 0.16) 3.6em,
-    rgba(255, 0, 128, 0.16) 4.8em
+    transparent calc(var(--mx) - 22%),
+    rgba(255, 255, 255, 0.16) var(--mx),
+    transparent calc(var(--mx) + 22%)
   );
+}
+.cromo-holo {
+  background: repeating-linear-gradient(115deg, rgba(255, 0, 150, 0.18) 0 1.2em, rgba(0, 200, 255, 0.18) 1.2em 2.4em, rgba(255, 240, 0, 0.18) 2.4em 3.6em);
   background-size: 300% 300%;
   background-position: var(--mx) var(--my);
-  mix-blend-mode: multiply;
-  opacity: calc(0.35 + var(--o) * 0.45);
+  mix-blend-mode: color-dodge;
 }
-
-/* Relieve: dibujo de circuito con luz y sombra que siguen al puntero */
-.cromo-relief {
-  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 12h14l6 6v12l6 6h22'/%3E%3Cpath d='M24 0v8l8 8h16'/%3E%3Cpath d='M0 40h10l4-4'/%3E%3Cpath d='M40 48v-6l-4-4'/%3E%3Ccircle cx='14' cy='12' r='2.1'/%3E%3Ccircle cx='26' cy='36' r='2.1'/%3E%3Ccircle cx='32' cy='16' r='2.1'/%3E%3Ccircle cx='14' cy='36' r='2.1'/%3E%3C/g%3E%3C/svg%3E");
-}
-.cromo-relief::before,
-.cromo-relief::after {
-  content: "";
-  position: absolute;
-  inset: -0.3em;
-  -webkit-mask-image: var(--pattern);
-  mask-image: var(--pattern);
-  -webkit-mask-size: 2.6em 2.6em;
-  mask-size: 2.6em 2.6em;
-}
-.cromo[data-rarity="epica"] .cromo-relief::before {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translate(calc(var(--lx) * -0.06em), calc(var(--ly) * -0.06em));
-}
-.cromo[data-rarity="epica"] .cromo-relief::after {
-  background: rgba(0, 0, 0, 0.6);
-  transform: translate(calc(var(--lx) * 0.06em), calc(var(--ly) * 0.06em));
-}
-.cromo[data-rarity="legendaria"] .cromo-relief::before {
-  background: rgba(255, 255, 255, 0.85);
-  transform: translate(calc(var(--lx) * -0.06em), calc(var(--ly) * -0.06em));
-}
-.cromo[data-rarity="legendaria"] .cromo-relief::after {
-  background: rgba(0, 0, 0, 0.12);
-  transform: translate(calc(var(--lx) * 0.06em), calc(var(--ly) * 0.06em));
+.cromo-glare {
+  background: radial-gradient(farthest-corner circle at var(--mx) var(--my), rgba(255, 255, 255, 0.35), transparent 55%);
+  mix-blend-mode: overlay;
+  opacity: var(--o);
+  transition: opacity 0.3s ease;
 }
 
 /* --- Reverso ----------------------------------------------------------- */
@@ -425,34 +427,33 @@ body {
 .cromo-back .cromo-body {
   align-items: center;
   justify-content: center;
-  gap: 1.2em;
-  background-color: #0a0a0a;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 1.15em 1.15em;
-  background-position: center;
+  gap: 1.5em;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 199, 44, 0.35), transparent 55%),
+    repeating-linear-gradient(135deg, rgba(255, 199, 44, 0.07) 0 1px, transparent 1px 1.7em),
+    #0d0b08;
 }
 .cromo-back-logo {
-  width: 5.6em;
-  height: 5.6em;
-  border-radius: 1.4em;
+  width: 6.5em;
+  height: 6.5em;
+  border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #ededed;
-  color: #0a0a0a;
-  font-size: 1em;
-  box-shadow: 0 0 0 1px #262626, 0 0 3em rgba(121, 40, 202, 0.45);
+  background: radial-gradient(circle at 35% 30%, #ffe08a, #ffc72c 45%, #b88a00);
+  box-shadow: 0 0 0 0.5em #111111, 0 0 0 0.75em #ffc72c, 0 0 2.5em rgba(255, 199, 44, 0.55);
+  color: #111111;
+  font-weight: 700;
 }
-.cromo-back-logo span { font-size: 2.2em; font-weight: 600; }
+.cromo-back-logo span { font-size: 2.4em; }
 .cromo-back-title {
-  font-weight: 600;
-  font-size: 1.4em;
-  letter-spacing: -0.03em;
-  color: #ededed;
+  font-weight: 900;
+  font-stretch: 70%;
+  font-size: 2.6em;
+  line-height: 0.9;
   text-align: center;
+  text-transform: uppercase;
+  color: #ffc72c;
 }
-.cromo-back-sub { font-size: 0.75em; letter-spacing: 0.1em; color: #a1a1a1; }
 
 @media (prefers-reduced-motion: reduce) {
   .cromo-tilt, .cromo-avatar { transition: none; }
